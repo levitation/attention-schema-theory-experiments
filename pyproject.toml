@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "aintelope"
 version = "0.1.0"
-description = ""
-authors = ["Hauke Rehfeld <git@haukerehfeld.de>"]
+description = "Simulate agents with reinforcement learning over selected cue-response patterns"
+authors = ["Hauke Rehfeld <git@haukerehfeld.de>", "Gunnar Zarncke <gunnar@zarncke.de>", "Andre Kochanke"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
