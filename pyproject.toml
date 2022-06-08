@@ -2,13 +2,24 @@
 name = "aintelope"
 version = "0.1.0"
 description = "Simulate agents with reinforcement learning over selected cue-response patterns"
-authors = ["Hauke Rehfeld <git@haukerehfeld.de>", "Gunnar Zarncke <gunnar@zarncke.de>", "Andre Kochanke"]
+authors = ["Hauke Rehfeld <git@haukerehfeld.de>", "Gunnar Zarncke <gunnar@zarncke.de>", "Andre Kochanke <a.kochanke@posteo.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pytorch-lightning = "^1.6.4"
+yapf = "^0.32.0"
+flake8 = "^4.0.1"
+toml = "^0.10.2"
 
 [tool.poetry.dev-dependencies]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 80
+
+[tool.flake8]
+max-line-length = 80
