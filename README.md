@@ -19,6 +19,8 @@ https://docs.google.com/document/d/1qc6a3MY2_guCZH8XJjutpaASNE7Zy6O5z1gblrfPemk/
 
 ## Installation
 
+### Poetry
+
 Dependencies are managed via `poetry`. See installation instructions
 [here](https://python-poetry.org/docs/#installation).
 
@@ -28,6 +30,8 @@ commands can also be executed without an active python environment via
 `poetry run <command>`.
 
 To execute the current trainer run `poetry run aintelope`.
+
+### Code formatting
 
 To autoformat python files you can use [`yapf`](https://github.com/google/yapf).
 To automatically sort the imports you can run
