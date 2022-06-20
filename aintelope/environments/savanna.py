@@ -74,7 +74,7 @@ class RawEnv(AECEnv):
 
     def __init__(self):
         self.possible_agents = [
-            'player_' + str(r) for r in range(AMOUNT_AGENTS)
+            f'player_{r}' for r in range(AMOUNT_AGENTS)
         ]
         self.agent_name_mapping = dict(
             zip(self.possible_agents, list(range(AMOUNT_AGENTS))))
