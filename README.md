@@ -38,3 +38,7 @@ To automatically sort the imports you can run
 [`isort .`](https://github.com/PyCQA/isort) from the root level of the project.
 
 See the `Makefile` for further instructions.
+
+## Running
+
+Try `/bin/python3 aintelope/environments/savanna.py`.
