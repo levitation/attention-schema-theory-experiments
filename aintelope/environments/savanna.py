@@ -32,11 +32,41 @@ class RenderSettings:
 
 
 class RenderState:
-    def __init__(self, canvas, settings):
+    def __init__(self, settings):
+        canvas = pygame.Surface((settings.window_size, settings.window_size))
         self.canvas = canvas
+        self.settings = settings
 
-    def render(self):
-        pass
+    def render(self, agents_state, grass):
+        window_size = self.settings.window_size
+        canvas = self.canvas
+
+        canvas.fill((255, 255, 255))
+        scale = window_size / MAP_DIM
+
+        modelview_m = np.identity(2, dtype=Float) * scale
+
+        for gr in grass.reshape((2, -1)):
+            p = np.matmul(gr, modelview_m)
+            pygame.draw.circle(
+                canvas,
+                self.settings.grass_color,
+                p,
+                scale * self.settings.grass_radius,
+            )
+
+        for agent, agent_pos in agents_state.items():
+            print('agent_pos', agent_pos)
+            assert len(agent_pos) == 2, agent_pos
+            # TODO: render agent name as text
+            p = np.matmul(agent_pos, modelview_m)
+            print(p)
+            pygame.draw.circle(
+                canvas,
+                self.settings.agent_color,
+                p.astype(np.int32),
+                scale * self.settings.agent_radius,
+            )
 
 
 class HumanRenderState:
@@ -88,7 +118,8 @@ class RawEnv(AECEnv):
             for agent in self.possible_agents
         }
 
-        self.render_state = None
+        render_settings = RenderSettings(self.metadata)
+        self.render_state = RenderState(render_settings)
         self.human_render_state = None
 
     @functools.lru_cache(maxsize=None)
@@ -108,52 +139,15 @@ class RawEnv(AECEnv):
         """Render the environment.
         """
 
-        render_settings = RenderSettings(self.metadata)
-        window_size = render_settings.window_size
-
-
-
-        if not self.render_state:
-            canvas = pygame.Surface((window_size, window_size))
-            self.render_state = RenderState(canvas, render_settings)
-        canvas = self.render_state.canvas
-
-        if mode == 'human' and not self.human_render_state:
-            self.human_render_state = HumanRenderState(render_settings)
-
-        canvas.fill((255, 255, 255))
-        scale = window_size / MAP_DIM
-
-        modelview_m = np.identity(2, dtype=Float) * scale
-
-        for gr in self.grass.reshape((2, -1)):
-            p = np.matmul(gr, modelview_m)
-            pygame.draw.circle(
-                canvas,
-                render_settings.grass_color,
-                p,
-                scale * render_settings.grass_radius,
-            )
-
-        for agent, agent_pos in self.state.items():
-            print('agent_pos', agent_pos)
-            assert len(agent_pos) == 2, agent_pos
-            # TODO: render agent name as text
-            p = np.matmul(agent_pos, modelview_m)
-            print(p)
-            pygame.draw.circle(
-                canvas,
-                render_settings.agent_color,
-                p.astype(np.int32),
-                scale * render_settings.agent_radius,
-            )
-
+        self.render_state.render(self.state, self.grass)
 
         if mode == "human":
+            if not self.human_render_state:
+                self.human_render_state = HumanRenderState(self.render_state.settings)
             self.human_render_state.render(self.render_state)
         else:  # rgb_array
             return np.transpose(
-                np.array(pygame.surfarray.pixels3d(canvas)), axes=(1, 0, 2)
+                np.array(pygame.surfarray.pixels3d(self.render_state.canvas)), axes=(1, 0, 2)
             )
 
     def close(self):
