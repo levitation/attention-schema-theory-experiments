@@ -177,7 +177,7 @@ class RawEnv(AECEnv):
         self.infos = {agent: {} for agent in self.agents}
         self.grass = np.random.randint(0, MAP_DIM, 2 * AMOUNT_GRASS).reshape(2, -1)
         self.state = {
-            agent: np.array(np.random.randint(0, MAP_DIM, 2), dtype=Float)
+            agent: np.random.randint(0, MAP_DIM, 2).astype(Float)
             for agent in self.agents
         }
         self.observations = {
