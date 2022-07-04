@@ -94,6 +94,25 @@ class HumanRenderState:
         self.clock.tick(self.fps)
 
 
+def reward_agent(agent_pos, grass):
+    def distance(a, b):
+        d = np.linalg.norm(a - b)
+        return d
+
+    reward = 1 / (
+        1 + min(distance(agent_pos, grass_pos) for grass_pos in grass)
+    )
+    return reward
+
+
+def move_agent(agent_pos, action):
+    move = ACTION_MAP[action]
+    # force copy
+    agent_pos = agent_pos + move
+    agent_pos = np.clip(agent_pos, MAP_MIN, MAP_MAX)
+    return agent_pos
+
+
 class RawEnv(AECEnv):
 
     metadata = {
@@ -234,26 +253,14 @@ class RawEnv(AECEnv):
         """
         self._cumulative_rewards[agent] = 0
 
-        move = ACTION_MAP[action]
-        # stores action of current agent
-        agent_pos = self.state[self.agent_selection]
-        agent_pos += move
-        agent_pos = np.clip(agent_pos, MAP_MIN, MAP_MAX)
-        self.state[self.agent_selection] = agent_pos
+        self.state[agent] = move_agent(self.state[agent], action)
 
         # collect reward if it is the last agent to act
         if self._agent_selector.is_last():
             for iagent, agent in enumerate(self.agents):
-                agent_pos = self.state[agent]
-
-                def distance(a, b):
-                    d = np.linalg.norm(a - b)
-                    return d
-
-                reward = min(
-                    distance(agent_pos, grass_pos) for grass_pos in self.grass
+                self.rewards[agent] = reward_agent(
+                    self.state[agent], self.grass
                 )
-                self.rewards[agent] = reward
 
             self.num_moves += 1
             # The dones dictionary must be updated for all players.
