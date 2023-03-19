@@ -1,20 +1,22 @@
+import pathlib
+
+from omegaconf import OmegaConf, DictConfig
 import pytest
-import yaml
-from yaml.loader import SafeLoader
 
 from aintelope.environments.env_utils.cleanup import cleanup_gym_envs
 from aintelope.training.simple_eval import run_episode
 from tests.test_config import root_dir
 
 
-def test_randomwalkagent_in_savanna_gym(root_dir):
-    # get the default params from training.lightning.yaml
-    # then override with these test params
-    with open(root_dir / "aintelope/config/training/lightning.yaml") as f:
-        full_params = yaml.load(f, Loader=SafeLoader)
-        hparams = full_params["hparams"]
-    # TODO: refactor out into test constants? Or leave here? /shrug
-    test_params = {
+@pytest.fixture
+def test_hparams(root_dir: pathlib.Path) -> DictConfig:
+    full_params = OmegaConf.load(root_dir / "aintelope/config/config_experiment.yaml")
+    hparams = full_params.hparams
+    return hparams
+
+
+def test_randomwalkagent_in_savanna_gym(test_hparams: DictConfig):
+    params_randomwalkagent = {
         "agent": "random_walk_agent",
         "env": "savanna-gym-v2",
         "env_type": "gym",
@@ -29,19 +31,13 @@ def test_randomwalkagent_in_savanna_gym(root_dir):
         },
         "agent_params": {},
     }
-    hparams.update(test_params)
-    run_episode(hparams=hparams)
+    OmegaConf.merge(test_hparams, params_randomwalkagent)
+    run_episode(hparams=test_hparams)
     cleanup_gym_envs()
 
 
-def test_onestepperfectpredictionagent_in_savanna_gym(root_dir):
-    # get the default params from training.lightning.yaml
-    # then override with these test params
-    with open(root_dir / "aintelope/config/training/lightning.yaml") as f:
-        full_params = yaml.load(f, Loader=SafeLoader)
-        hparams = full_params["hparams"]
-    # TODO: refactor out into test constants? Or leave here? /shrug
-    test_params = {
+def test_onestepperfectpredictionagent_in_savanna_gym(test_hparams: DictConfig):
+    params_perfectpredictionagent = {
         "agent": "one_step_perfect_prediction_agent",
         "env": "savanna-gym-v2",
         "env_type": "gym",
@@ -56,19 +52,13 @@ def test_onestepperfectpredictionagent_in_savanna_gym(root_dir):
         },
         "agent_params": {},
     }
-    hparams.update(test_params)
-    run_episode(hparams=hparams)
+    OmegaConf.merge(test_hparams, params_perfectpredictionagent)
+    run_episode(hparams=test_hparams)
     cleanup_gym_envs()
 
 
-def test_iterativeweightoptimizationagent_in_savanna_gym(root_dir):
-    # get the default params from training.lightning.yaml
-    # then override with these test params
-    with open(root_dir / "aintelope/config/training/lightning.yaml") as f:
-        full_params = yaml.load(f, Loader=SafeLoader)
-        hparams = full_params["hparams"]
-    # TODO: refactor out into test constants? Or leave here? /shrug
-    test_params = {
+def test_iterativeweightoptimizationagent_in_savanna_gym(test_hparams: DictConfig):
+    params_weightoptimizationagent = {
         "agent": "iterative_weight_optimization_agent",
         "env": "savanna-gym-v2",
         "env_type": "gym",
@@ -83,6 +73,6 @@ def test_iterativeweightoptimizationagent_in_savanna_gym(root_dir):
         },
         "agent_params": {},
     }
-    hparams.update(test_params)
-    run_episode(hparams=hparams)
+    OmegaConf.merge(test_hparams, params_weightoptimizationagent)
+    run_episode(hparams=test_hparams)
     cleanup_gym_envs()
