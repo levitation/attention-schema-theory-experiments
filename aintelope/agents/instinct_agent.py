@@ -229,7 +229,6 @@ class InstinctAgent:
             i += 1
             water_x.append(state[i]); i += 1
             water_y.append(state[i]); i += 1
-            i += 1
             # fmt: on
 
             if row["instinct_events"] != "[]":
