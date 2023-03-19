@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import numpy.typing as npt
 import gym
 from gym.spaces import Box, Discrete
 from gym.utils import seeding
@@ -106,7 +107,13 @@ class SavannaGymEnv(gym.Env):
         info = {"placeholder": "hmmm"}
         return (self._get_obs(), info)
 
-    def _get_obs(self):
+    def _get_obs(self) -> npt.NDArray[np.float32]:
+        """Function to get environment state observation. Environment objects are
+        encoded in triplets as (0) agents (1) grass (2) water.
+
+        Returns:
+            (npt.NDArray[float32]): state array
+        """
         observations = [0] + self.agent_state.tolist()
         for x in self.grass_patches:
             observations += [1, x[0], x[1]]
