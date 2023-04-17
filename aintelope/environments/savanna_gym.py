@@ -15,7 +15,12 @@ from aintelope.environments.savanna import (
     reward_agent,
     PositionFloat,
     Action,
+    Observation,
+    Reward,
+    Info,
 )
+
+Step = tuple[Observation, Reward, bool, bool, Info]
 
 logger = logging.getLogger("aintelope.environments.savanna_gym")
 
@@ -37,23 +42,22 @@ class SavannaGymEnv(SavannaEnv, gym.Env):
         gym.Env.__init__(self)
         assert self.metadata["amount_agents"] == 1, "agents must == 1 for gym env"
 
-    def step(self, action):
+    def step(self, action) -> Step:
         actions = {self._agent_id: action}
         # should be: observations, rewards, dones, infos
         # but per agent
         res = SavannaEnv.step(self, actions)
 
         observations, rewards, dones, infos = res
-        assert isinstance(observations, dict)
-        assert isinstance(rewards, dict)
-        assert isinstance(dones, dict)
-        assert isinstance(infos, dict)
 
         # so just return the first
-        res = tuple(r[self._agent_id] if isinstance(r, dict) else r for r in res)
+        i = self._agent_id
+        observation = observations[i]
+        reward = rewards[i]
+        done = dones[i]
+        info = infos[i]
         logger.warning(res)
-        # should return observation, reward, done, info
-        return res
+        return observation, reward, done, info
 
     def reset(self, seed=None, options={}):
         observations = SavannaEnv.reset(self, seed, options)

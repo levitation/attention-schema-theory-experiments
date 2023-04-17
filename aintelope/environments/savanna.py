@@ -1,4 +1,5 @@
 import typing as typ
+from typing import Tuple, Dict
 import logging
 import functools
 
@@ -18,6 +19,18 @@ PositionFloat = np.float32
 Action = int
 AgentId = str
 AgentStates = typ.Dict[AgentId, np.ndarray]
+
+Observation = np.ndarray
+Reward = float
+Info = dict
+
+Step = Tuple[
+    Dict[AgentId, Observation],
+    Dict[AgentId, Reward],
+    Dict[AgentId, bool],
+    Dict[AgentId, bool],
+    Dict[AgentId, Info],
+]
 
 # environment constants
 ACTION_MAP = np.array([[0, 1], [1, 0], [0, -1], [-1, 0]], dtype=PositionFloat)
@@ -220,7 +233,7 @@ class SavannaEnv:
         observations = {agent: self.observe(agent) for agent in self.agents}
         return observations
 
-    def step(self, actions: typ.Dict[str, Action]):
+    def step(self, actions: typ.Dict[str, Action]) -> Step:
         """step(action) takes in an action for each agent and should return the
         - observations
         - rewards
@@ -270,7 +283,7 @@ class SavannaEnv:
 
         # typically there won't be any information in the infos, but there must
         # still be an entry for each agent
-        infos = {agent: {} for agent in self.agents}
+        infos: Dict[AgentId, dict] = {agent: {} for agent in self.agents}
 
         if env_done:
             self.agents = []
