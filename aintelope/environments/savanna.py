@@ -165,7 +165,7 @@ class SavannaEnv:
         }
 
         # our own state
-        self.agent_state = np.ndarray([])  # just the agents position for now
+        self.agent_states: AgentStates = {}
         self.seed()
 
         render_settings = RenderSettings(self.metadata)
