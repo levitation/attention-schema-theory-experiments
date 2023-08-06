@@ -250,7 +250,7 @@ def run_experiment(cfg: DictConfig) -> None:
 
     record_path = dir_experiment / "memory_records" / f"{cfg.timestamp}.csv"
     logger.info(f"Saving training records to disk at {record_path}")
-    Path(record_path).parent.mkdir(exist_ok=True)
+    record_path.parent.mkdir(exist_ok=True, parents=True)
     lightning_module.agent.get_history().to_csv(record_path, index=False)
 
     # Notes
