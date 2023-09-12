@@ -216,17 +216,21 @@ class DQNLightning(LightningModule):
 
 
 def run_experiment(cfg: DictConfig) -> None:
-    dir_out, dir_logs, exp_name = "outputs", "lightning_logs", f"{cfg.experiment_name}"
-    dir_experiment = Path(dir_out) / dir_logs / exp_name
+    #dir_out, dir_logs, exp_name = "outputs", "lightning_logs", 
+    dir_out, exp_name = f"{cfg.experiment_dir}", f"{cfg.experiment_name}"
+    dir_experiment = Path(dir_out) #/ dir_logs / exp_name
+    
     lightning_module = DQNLightning(cfg.hparams)
 
     checkpoint_callback = ModelCheckpoint(
-        dirpath=dir_experiment / "checkpoints",
-        filename="savanna-{epoch}-{val_loss:.2f}",
+        dirpath=dir_experiment / "checkpoints", # add the timestamp floder
+        filename=exp_name+"-{epoch}-{val_loss:.2f}", #env savanna instead
         auto_insert_metric_name=True,
-        train_time_interval=timedelta(minutes=20),
+        #train_time_interval=timedelta(minutes=20),
         save_last=True,
+        save_top_k=-1,
         save_on_train_epoch_end=True,
+        every_n_epochs=3, # should this be enough? or add some other
     )
 
     if cfg.trainer_params.resume_from_checkpoint:
@@ -235,7 +239,8 @@ def run_experiment(cfg: DictConfig) -> None:
     else:
         checkpoint = None
     tb_logger = pl_loggers.TensorBoardLogger(
-        save_dir=dir_out, name=dir_logs, version=exp_name
+        save_dir=dir_out, name=exp_name
+        #save_dir=dir_out, name=dir_logs, version=exp_name
     )
 
     trainer = Trainer(
