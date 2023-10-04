@@ -4,10 +4,10 @@ TESTS = tests
 VENV = venv_$(PROJECT)
 
 run-training-baseline:
-	python -m ${PROJECT} config_baseline_experiment.yaml
+	python -m ${PROJECT} hydra.verbose=true config_baseline_experiment.yaml
 
 run-training-instinct:
-	python -m ${PROJECT} config_instinct_experiment.yaml
+	python -m ${PROJECT} hydra.verbose=true config_instinct_experiment.yaml
 
 .PHONY: venv
 venv: ## create virtual environment
