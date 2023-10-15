@@ -37,7 +37,7 @@ class DQNLightning(LightningModule):
         eps_end: float = 0.01,
         episode_length: int = 500,
         warm_start_steps: int = 1000,
-        env_params: dict = {},
+        env_params: typ.Optional[typ.Dict] = None,
     ) -> None:
         """
         Args:
@@ -57,6 +57,10 @@ class DQNLightning(LightningModule):
         """
         super().__init__()
         self.save_hyperparameters()
+
+        if env_params is None:
+            env_params = {}
+
         if self.hparams.env == "savanna_v1":
             self.env = SavannaEnv(env_params=env_params)
             obs_size = self.env.observation_space.shape[0]
