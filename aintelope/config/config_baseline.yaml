@@ -1,0 +1,7 @@
+defaults:
+  - config_experiment
+
+hparams:
+  agent_id: q_agent
+  agent_params:
+    target_instincts: [] # from agent/instinct interface, [hunger, thirst, curiosity]

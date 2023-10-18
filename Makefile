@@ -3,8 +3,11 @@ PROJECT = aintelope
 TESTS = tests
 VENV = venv_$(PROJECT)
 
-run-training-baseline:
+run-training:
 	python -m ${PROJECT} hydra.verbose=true config_experiment.yaml
+
+run-training-baseline:
+	python -m ${PROJECT} hydra.verbose=true config_baseline.yaml
 
 run-training-instinct:
 	python -m ${PROJECT} hydra.verbose=true config_instinct.yaml
