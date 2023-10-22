@@ -234,7 +234,8 @@ class SavannaEnv:
         # self.agent_selection = self._agent_selector.next()
         self.dones = {agent: False for agent in self.agents}
         observations = {agent: self.observe(agent) for agent in self.agents}
-        return observations
+        infos = {agent: {} for agent in self.agents}
+        return observations, infos
 
     def step(self, actions: Dict[str, Action]) -> Step:
         """step(action) takes in an action for each agent and should return the
@@ -367,4 +368,4 @@ class SavannaEnv:
         or any other environment data which should not be kept around after
         the user is no longer using the environment.
         """
-        raise NotImplementedError
+        pass
