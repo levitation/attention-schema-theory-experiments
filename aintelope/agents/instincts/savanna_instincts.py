@@ -17,7 +17,7 @@ class Smell:
         min_grass_distance = distance_to_closest_item(
             agent_pos, agent.env.grass_patches
         )
-        event_signal = 0  
+        event_signal = 0
         smell_reward = 1.0 / (min_grass_distance + 1.0)
         return smell_reward, event_signal
 

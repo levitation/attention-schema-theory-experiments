@@ -20,7 +20,7 @@ class InstinctAgent(QAgent):
     def __init__(
         self,
         env: Environment,
-        #model: nn.Module,
+        # model: nn.Module,
         replay_buffer: ReplayBuffer,
         warm_start_steps: int,
         target_instincts: List[str] = [],
@@ -40,7 +40,7 @@ class InstinctAgent(QAgent):
         # reset after attribute setup
         super().__init__(
             env=env,
-            #model=model,
+            # model=model,
             replay_buffer=replay_buffer,
             warm_start_steps=warm_start_steps,
         )
