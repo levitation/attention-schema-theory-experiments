@@ -20,7 +20,7 @@ class InstinctAgent(QAgent):
     def __init__(
         self,
         env: Environment,
-        model: nn.Module,
+        #model: nn.Module,
         replay_buffer: ReplayBuffer,
         warm_start_steps: int,
         target_instincts: List[str] = [],
@@ -28,7 +28,7 @@ class InstinctAgent(QAgent):
         """
         Args:
             env (Environment): environment instance
-            model (nn.Module): neural network instance
+            #model (nn.Module): neural network instance
             replay_buffer (ReplayBuffer): replay buffer of the agent
             warm_start_steps (int): amount of initial random buffer
             target_instincts (List[str]): names if used instincts
@@ -40,7 +40,7 @@ class InstinctAgent(QAgent):
         # reset after attribute setup
         super().__init__(
             env=env,
-            model=model,
+            #model=model,
             replay_buffer=replay_buffer,
             warm_start_steps=warm_start_steps,
         )
@@ -55,6 +55,7 @@ class InstinctAgent(QAgent):
         epsilon-greedy policy.
 
         Args:
+            net (nn.Module): neural network instance
             epsilon (float): value to determine likelihood of taking a random action
             device (str): current device
 

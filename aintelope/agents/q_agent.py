@@ -37,7 +37,7 @@ class QAgent(Agent):
     def __init__(
         self,
         env: Environment,
-        model: nn.Module,
+        #model: nn.Module,
         replay_buffer: ReplayBuffer,
         warm_start_steps: int,
         target_instincts: List[str] = [],
@@ -49,7 +49,7 @@ class QAgent(Agent):
             self.action_space = self.env.action_space("agent0")
         else:
             raise TypeError(f"{type(env)} is not a valid environment")
-        self.model = model
+        #self.model = model
         self.replay_buffer = replay_buffer
         self.warm_start_steps = warm_start_steps
         self.history: List[HistoryStep] = []
@@ -67,6 +67,7 @@ class QAgent(Agent):
         epsilon-greedy policy.
 
         Args:
+            net: pytorch Module instance, the model
             epsilon: value to determine likelihood of taking a random action
             device: current device
 
@@ -84,7 +85,7 @@ class QAgent(Agent):
             if device not in ["cpu"]:
                 state = state.cuda(device)
 
-            q_values = self.model(state)
+            q_values = net(state) #self.model(state) 
             _, action = torch.max(q_values, dim=1)
             action = int(action.item())
 
