@@ -110,7 +110,7 @@ class QAgent(Agent):
             device: current device
 
         Returns:
-            reward, done
+            env_reward, done
         """
 
         # The 'mind' (model) of the agent decides what to do next
@@ -119,23 +119,24 @@ class QAgent(Agent):
         # do step in the environment
         # the environment reports the result of that decision
         if isinstance(self.env, GymEnv):
-            new_state, env_reward, terminated, truncated, info = self.env.step(action)
+            new_state, env_reward, terminated, truncated, _ = self.env.step(action)
             done = terminated or truncated
         elif isinstance(self.env, PettingZooEnv):
-            new_state, env_reward, terminateds, truncateds, info = self.env.step(action)
+            new_state, env_reward, terminateds, truncateds, _ = self.env.step(action)
             done = {
                 key: terminated or truncateds[key]
                 for (key, terminated) in terminateds.items()
             }
         else:
-            new_state, reward, done, info = self.env.step(action)
+            logger.warning(f"{self.env} is not of type GymEnv or PettingZooEnv")
+            new_state, env_reward, done, _ = self.env.step(action)
 
-        exp = Experience(self.state, action, reward, done, new_state)
+        exp = Experience(self.state, action, env_reward, done, new_state)
         self.history.append(
             HistoryStep(
                 state=self.env.state_to_namedtuple(self.state.tolist()),
                 action=action,
-                reward=reward,
+                reward=env_reward,
                 done=done,
                 instinct_events=[],
                 new_state=self.env.state_to_namedtuple(new_state.tolist()),
@@ -149,9 +150,9 @@ class QAgent(Agent):
                     [
                         self.state.tolist(),
                         action,
-                        reward,
+                        env_reward,
                         done,
-                        instinct_events,
+                        [],
                         new_state,
                     ]
                 )
@@ -159,11 +160,12 @@ class QAgent(Agent):
         self.replay_buffer.append(exp)
         self.state = new_state
 
-        # if scenario is complete or agent experiences catastrophic failure, end the agent.
+        # if scenario is complete or agent experiences catastrophic failure,
+        # end the agent.
         if done:
             self.reset()
 
-        return reward, done
+        return env_reward, done
 
     def get_history(self) -> pd.DataFrame:
         """
