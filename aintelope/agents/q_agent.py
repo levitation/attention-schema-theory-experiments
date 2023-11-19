@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, NamedTuple, List
 import logging
+import numpy.typing as npt
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -9,6 +10,10 @@ import pandas as pd
 import torch
 from torch import nn
 
+from gymnasium.spaces import Discrete
+
+from aintelope.environments.savanna_gym import SavannaGymEnv #TODO used for hack
+from aintelope.training.dqn_training import Trainer 
 from aintelope.agents import (
     Agent,
     GymEnv,
@@ -17,7 +22,16 @@ from aintelope.agents import (
     register_agent_class,
 )
 from aintelope.agents.memory import Experience#, ReplayBuffer
-
+from aintelope.environments.typing import (
+    ObservationFloat,
+    PositionFloat,
+    Action,
+    AgentId,
+    AgentStates,
+    Observation,
+    Reward,
+    Info,
+)
 
 logger = logging.getLogger("aintelope.agents.q_agent")
 
@@ -53,10 +67,12 @@ class QAgent(Agent):
         #self.replay_buffer = replay_buffer
         # self.warm_start_steps = warm_start_steps
         self.history: List[HistoryStep] = []
-        self.reset()
+        self.done = False
+        self.last_action = 0
+        #self.reset() #needs state, reset done in experiment.py where can ask for it
 
     def reset(self, state) -> None:
-        """Resents self and updates the state."""
+        """Resets self and updates the state."""
         self.done = False
         self.state = state
         if isinstance(self.state, tuple):
@@ -97,6 +113,7 @@ class QAgent(Agent):
             _, action = torch.max(q_values, dim=1)
             action = int(action.item())
         '''
+        self.last_action = action
         return action
 
     # double check that all the logic of `play_step` is within experiments.py and then
@@ -144,9 +161,10 @@ class QAgent(Agent):
         '''
     def update(
         self,
+        env: SavannaGymEnv = None, #TODO hack, figure out if state_to_namedtuple can be static somewhere
         observation: npt.NDArray[ObservationFloat] = None,
         score: float = 0.0,
-        done: boolean = False,
+        done: bool = False,
         save_path: Optional[str] = None,
     ) -> None:
         """
@@ -160,16 +178,16 @@ class QAgent(Agent):
         Returns:
             None
         """
-        
-        exp = Experience(self.state, action, score, done, next_state)
+        next_state = observation # add state (interoception) handling here when needed
+        exp = Experience(self.state, self.last_action, score, done, next_state)
         self.history.append(
             HistoryStep(
-                state=self.env.state_to_namedtuple(self.state.tolist()),
-                action=action,
+                state=env.state_to_namedtuple(self.state.tolist()),
+                action=self.last_action,
                 reward=score,
                 done=done,
                 instinct_events=[],
-                next_state=self.env.state_to_namedtuple(next_state.tolist()),
+                next_state=env.state_to_namedtuple(next_state.tolist()),
             )
         )
 
