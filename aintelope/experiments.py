@@ -1,18 +1,27 @@
 from collections import namedtuple
-'''
+
+import logging
 from omegaconf import DictConfig
 import hydra
-import torch
-import torch.nn as nn
-import torch.optim as optim
-'''
+#import torch
+#import torch.nn as nn
+#import torch.optim as optim
+
 from aintelope.environments.savanna_gym import SavannaGymEnv
 from aintelope.models.dqn import DQN
+from aintelope.agents import (
+    Agent,
+    GymEnv,
+    PettingZooEnv,
+    Environment,
+    register_agent_class,
+)
 from aintelope.agents.instinct_agent import QAgent  # initialize agent registry
 from aintelope.agents import get_agent_class
+from aintelope.training.dqn_training import Trainer # TODO trainer as parameter
 # from aintelope.agents.memory import ReplayBuffer, Experience
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @hydra.main(version_base=None, config_path="config", config_name="config_experiment")
 def main(cfg: DictConfig) -> None:
@@ -22,25 +31,32 @@ def main(cfg: DictConfig) -> None:
 
     # Environment
     env = SavannaGymEnv(env_params=cfg.hparams.env_params) #TODO: get env from parameters
-    n_actions = env.action_space.n # TODO what is this used for?
-    #state, info = env.reset() #TODO: each agent has their own state, remove from here
-    n_observations = len(state)  # get observation space from env
-    action_space = self.env.action_space # removed dynamic actions per agent for now
+    action_space = env.action_space # TODO what is this used for?
+    observation, info = env.reset() #TODO: each agent has their own state, refactor
+    # TODO: env doesnt register agents properly, it hallucinates from zooapi and names in its own way
+    # figure out how to make this coherent. there's "possible_agents" now
     
-    # Common trainer
-    trainer = dqn_training()
+    n_observations = len(observation) #len(state)  # get observation space from env
+    #action_space = env.action_space # removed dynamic actions per agent for now
+    
+    # Common trainer for each agent's models
+    trainer = Trainer(cfg, n_observations, action_space) # TODO: have a section in params for trainer? its trainer and hparams now tho
     
     # Agents
     #agents = {}
     agent_id = 0
-    #for agent_id in range(agents):
+    #for agent_id in range(cfg.params.amount_agents?):
     #    agents["agent_"+agent_id] = 
-    agent = get_agent_class(hparams.agent_id)(
+    agent = get_agent_class(cfg.hparams.agent_id)(
         agent_id,
         trainer,
-        hparams.warm_start_steps,
-        **hparams.agent_params,
+        cfg.hparams.warm_start_steps,
+        **cfg.hparams.agent_params,
     )
+    # TODO: savanna_gym interface will reduce {agent_0:obs} to obs... take into account here
+    agent.reset(env.observe(f"agent_{agent.id}"))
+    #.... end of for-loop
+    
     # buffer should be associated with agent
     #replay_buffer = ReplayBuffer(cfg.hparams.replay_size)
     # generalize to multi agent setup
@@ -56,13 +72,12 @@ def main(cfg: DictConfig) -> None:
     #     agents.play_step(self.net, epsilon=1.0) # TODO
     
     steps_done = 0
-
+    num_episodes = 1 # TODO add episodes and modify epochs away in config. also, saving models! 
     for i_episode in range(num_episodes):
         # Reset
         state, info = env.reset() # remove state and info from here
-        for agent in agents:
-            agent.reset()
-            agent.observe(env.observation(agent)) #TODO
+        #for agent in agents:
+        agent.reset(env.observe(f"agent_{agent.id}"))
         #state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
 
         for step in range(1): #TODO
@@ -74,7 +89,7 @@ def main(cfg: DictConfig) -> None:
             )
             '''
             # for agent in agents:
-            observation = self.env.observe(agent)
+            observation = env.observe(f"agent_{agent.id}")
             action = agent.get_action(observation, step)#state, policy_net, epsilon, "cpu")
             
             # Env step
@@ -113,7 +128,7 @@ def main(cfg: DictConfig) -> None:
             '''
             # Agent is updated based on what the env shows. All commented above included ^
             done = terminated or truncated
-            agent.update(observation, score, done) # note that score is used ONLY by baseline
+            agent.update(env, observation, score, done) # note that score is used ONLY by baseline
             
             # Perform one step of the optimization (on the policy network)
             # TEST: if we call this every time, will it overlearn the initial steps? The buffer
@@ -123,7 +138,7 @@ def main(cfg: DictConfig) -> None:
             if done:
                 episode_durations.append(step + 1)
                 break
-
+'''
 # WIP: instantiate?
 def reset() -> None:
     """Resets environment and agents."""
@@ -131,7 +146,7 @@ def reset() -> None:
     self.state = state
     if isinstance(self.state, tuple):
         self.state = self.state[0]
-   
+'''   
         
 if __name__ == "__main__":
     main()

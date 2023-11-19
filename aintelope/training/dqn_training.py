@@ -1,10 +1,12 @@
+from typing import Dict, List, Optional, NamedTuple, Tuple
 import typing as typ
 import logging
 from pathlib import Path
 from collections import OrderedDict
 
 from omegaconf import DictConfig
-
+import numpy.typing as npt
+import numpy as np
 import gymnasium as gym
 
 import torch
@@ -18,20 +20,31 @@ import torch.optim as optim
 
 from aintelope.agents.memory import ReplayBuffer#, RLDataset
 from aintelope.agents import get_agent_class
-from aintelope.agents.instinct_agent import InstinctAgent
 from aintelope.models.dqn import DQN
 from aintelope.environments.savanna_gym import SavannaGymEnv
+from aintelope.agents.memory import Experience, ReplayBuffer
 
-class trainer:
+from aintelope.environments.typing import (
+    ObservationFloat,
+    PositionFloat,
+    Action,
+    AgentId,
+    AgentStates,
+    Observation,
+    Reward,
+    Info,
+)
+
+class Trainer:
     
-    def __init__(self, params):
+    def __init__(self, params, n_observations, action_space):
         self.policy_nets = {}
         self.target_nets = {}
         self.replay_buffers = {}
         
-        self.n_observations = params.n_observations
-        self.n_actions = params.n_actions # TODO add these to the config
-        self.hparams = params.hparams
+        self.n_observations = n_observations
+        self.action_space = action_space # TODO add these to the config? 
+        self.hparams = params.hparams # now have to give whole cfg, trainer/hparams...
         '''
         BATCH_SIZE = 128
         GAMMA = 0.99
@@ -41,21 +54,28 @@ class trainer:
         '''
         self.TAU = 0.005
         LR = 1e-4
-        
-        self.optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+        # tb-logging and device control, check lightning_Trainer for 'AVAIL'
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.optimizer = optim.AdamW(
+            DQN(self.n_observations, self.action_space.n).parameters(), lr=LR, amsgrad=True
+        ) #refactor, making a dummy network now. problem is add_agent inits first ---v
 
     def add_agent(self,agent_id):
-        self.replay_buffers[agent_id] = ReplayBuffer(cfg.hparams.replay_size)
-        self.policy_nets[agent_id] = DQN(n_observations, n_actions).to(device)
-        self.target_nets[agent_id] = DQN(n_observations, n_actions).to(device)
-        self.target_net.load_state_dict(policy_net.state_dict())
+        self.replay_buffers[agent_id] = ReplayBuffer(self.hparams.replay_size)
+        self.policy_nets[agent_id] = DQN(self.n_observations, self.action_space.n).to(self.device)
+        self.target_nets[agent_id] = DQN(self.n_observations, self.action_space.n).to(self.device)
+        self.target_net.load_state_dict(self.policy_nets[agent_id].state_dict())
 
     @torch.no_grad() # TODO this might not be in the right place!
-    def get_action(self, agent_id: str = "", observation, step: int = 0):
+    def get_action(self, 
+                   agent_id: str = "",
+                   observation: npt.NDArray[ObservationFloat] = None, 
+                   step: int = 0
+                  )-> Optional[int]:
         
         epsilon = max(
-                cfg.hparams.eps_end,
-                cfg.hparams.eps_start - step * 1 / cfg.hparams.eps_last_frame,
+                self.hparams.eps_end,
+                self.hparams.eps_start - step * 1 / self.hparams.eps_last_frame,
             )
         if np.random.random() < epsilon:
             action = self.action_space.sample()
@@ -63,8 +83,8 @@ class trainer:
             logger.debug("debug state", type(state))
             state = torch.tensor(np.expand_dims(state, 0))
             logger.debug("debug state tensor", type(state), state.shape)
-            if device not in ["cpu"]:
-                state = state.cuda(device)
+            if self.device not in ["cpu"]:
+                state = state.cuda(self.device)
 
             q_values = net(state)
             _, action = torch.max(q_values, dim=1)
@@ -73,7 +93,7 @@ class trainer:
         return action
     
     
-    def update_memory(agent_id: str, exp: Experience):
+    def update_memory(self, agent_id: str, exp: Experience):
         self.replay_buffers[agent_id].append(exp)
         
     # replace by experience
@@ -99,7 +119,7 @@ class trainer:
             # (a final state would've been the one after which simulation ended)
             non_final_mask = torch.tensor(
                 tuple(map(lambda s: s is not None, batch.next_state)),
-                device=device,
+                device=self.device,
                 dtype=torch.bool,
             )
             non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
@@ -119,7 +139,7 @@ class trainer:
             # on the "older" target_net; selecting their best reward with max(1)[0].
             # This is merged based on the mask, such that we'll have either the expected
             # state value or 0 in case the state was final.
-            next_state_values = torch.zeros(self.hparams.batch_size, device=device)
+            next_state_values = torch.zeros(self.hparams.batch_size, device=self.device)
             with torch.no_grad():
                 next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
             # Compute the expected Q values
