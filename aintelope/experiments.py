@@ -1,127 +1,102 @@
 from collections import namedtuple
-
+'''
 from omegaconf import DictConfig
 import hydra
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+'''
 from aintelope.environments.savanna_gym import SavannaGymEnv
 from aintelope.models.dqn import DQN
 from aintelope.agents.instinct_agent import QAgent  # initialize agent registry
 from aintelope.agents import get_agent_class
-from aintelope.agents.memory import ReplayBuffer, Experience
-
+# from aintelope.agents.memory import ReplayBuffer, Experience
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-# replace by experience
-Transition = namedtuple("Transition", ("state", "action", "next_state", "reward"))
-
-BATCH_SIZE = 128
-GAMMA = 0.99
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 1000
-TAU = 0.005
-LR = 1e-4
-
-
-def optimize_model(optimizer, memory, policy_net, target_net):
-    if len(memory) < BATCH_SIZE:
-        return
-    transitions = memory.sample(BATCH_SIZE)
-    # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
-    # detailed explanation). This converts batch-array of Transitions
-    # to Transition of batch-arrays.
-    batch = Transition(*zip(*transitions))
-
-    # Compute a mask of non-final states and concatenate the batch elements
-    # (a final state would've been the one after which simulation ended)
-    non_final_mask = torch.tensor(
-        tuple(map(lambda s: s is not None, batch.next_state)),
-        device=device,
-        dtype=torch.bool,
-    )
-    non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
-    state_batch = torch.cat(batch.state)
-    action_batch = torch.cat(batch.action)
-    reward_batch = torch.cat(batch.reward)
-
-    # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-    # columns of actions taken. These are the actions which would've been taken
-    # for each batch state according to policy_net
-    state_action_values = policy_net(state_batch).gather(1, action_batch)
-
-    # Compute V(s_{t+1}) for all next states.
-    # Expected values of actions for non_final_next_states are computed based
-    # on the "older" target_net; selecting their best reward with max(1)[0].
-    # This is merged based on the mask, such that we'll have either the expected
-    # state value or 0 in case the state was final.
-    next_state_values = torch.zeros(BATCH_SIZE, device=device)
-    with torch.no_grad():
-        next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0]
-    # Compute the expected Q values
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
-
-    # Compute Huber loss
-    criterion = nn.SmoothL1Loss()
-    loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
-
-    # Optimize the model
-    optimizer.zero_grad()
-    loss.backward()
-    # In-place gradient clipping
-    torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
-    optimizer.step()
-
-
-if torch.cuda.is_available():
-    num_episodes = 600
-else:
-    num_episodes = 1
-
-
 @hydra.main(version_base=None, config_path="config", config_name="config_experiment")
 def main(cfg: DictConfig) -> None:
+    logger = logging.getLogger("aintelope.experiment")
+    
     episode_durations = []
 
-    env = SavannaGymEnv(env_params=cfg.hparams.env_params)
-    n_actions = env.action_space.n
-    state, info = env.reset()
+    # Environment
+    env = SavannaGymEnv(env_params=cfg.hparams.env_params) #TODO: get env from parameters
+    n_actions = env.action_space.n # TODO what is this used for?
+    #state, info = env.reset() #TODO: each agent has their own state, remove from here
     n_observations = len(state)  # get observation space from env
-
+    action_space = self.env.action_space # removed dynamic actions per agent for now
+    
+    # Common trainer
+    trainer = dqn_training()
+    
+    # Agents
+    #agents = {}
+    agent_id = 0
+    #for agent_id in range(agents):
+    #    agents["agent_"+agent_id] = 
+    agent = get_agent_class(hparams.agent_id)(
+        agent_id,
+        trainer,
+        hparams.warm_start_steps,
+        **hparams.agent_params,
+    )
     # buffer should be associated with agent
-    replay_buffer = ReplayBuffer(cfg.hparams.replay_size)
+    #replay_buffer = ReplayBuffer(cfg.hparams.replay_size)
     # generalize to multi agent setup
-    agent = get_agent_class(agent_id=cfg.hparams.agent_id)(env, replay_buffer, 0)
 
     # networks should be part of the agent
-    policy_net = DQN(n_observations, n_actions).to(device)
-    target_net = DQN(n_observations, n_actions).to(device)
-    optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
-    target_net.load_state_dict(policy_net.state_dict())
-
+    #policy_net = DQN(n_observations, n_actions).to(device)
+    #target_net = DQN(n_observations, n_actions).to(device)
+    #optimizer = optim.AdamW(policy_net.parameters(), lr=LR, amsgrad=True)
+    #target_net.load_state_dict(policy_net.state_dict())
+    
+    # Warmup not supported atm, maybe not needed?
+    #for _ in range(hparams.warm_start_steps):
+    #     agents.play_step(self.net, epsilon=1.0) # TODO
+    
     steps_done = 0
 
     for i_episode in range(num_episodes):
-        state, info = env.reset()
-        state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
+        # Reset
+        state, info = env.reset() # remove state and info from here
+        for agent in agents:
+            agent.reset()
+            agent.observe(env.observation(agent)) #TODO
+        #state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
 
-        for t in range(1):
-            # set epsilon value
+        for step in range(1): #TODO
+            '''
+            # set epsilon value. should be in agent
             epsilon = max(
                 cfg.hparams.eps_end,
-                cfg.hparams.eps_start - t * 1 / cfg.hparams.eps_last_frame,
+                cfg.hparams.eps_start - step * 1 / cfg.hparams.eps_last_frame,
             )
-
-            # should be for multiple agents, e.g. via a loop
-            action = agent.get_action(state, policy_net, epsilon, "cpu")
-            observation, reward, terminated, truncated, _ = env.step(action)
+            '''
+            # for agent in agents:
+            observation = self.env.observe(agent)
+            action = agent.get_action(observation, step)#state, policy_net, epsilon, "cpu")
+            
+            # Env step
+            if isinstance(env, GymEnv):
+                observation, score, terminated, truncated, _ = env.step(action)
+                done = terminated or truncated
+            elif isinstance(env, PettingZooEnv):
+                observation, score, terminateds, truncateds, _ = env.step(action)
+                done = {
+                    key: terminated or truncateds[key]
+                    for (key, terminated) in terminateds.items()
+                }
+            else:
+                logger.warning(f"{env} is not of type GymEnv or PettingZooEnv")
+                observation, score, done, _ = env.step(action)
+            ### TODO: move to support only pettingzoo?
+            #observation, reward, terminated, truncated, _ = env.step(action)
+            
+            '''
             reward = torch.tensor([reward], device=device)
             done = terminated or truncated
-
+            
             if terminated:
                 next_state = None
             else:
@@ -135,25 +110,28 @@ def main(cfg: DictConfig) -> None:
 
             # Move to the next state
             state = next_state
-
+            '''
+            # Agent is updated based on what the env shows. All commented above included ^
+            done = terminated or truncated
+            agent.update(observation, score, done) # note that score is used ONLY by baseline
+            
             # Perform one step of the optimization (on the policy network)
-            optimize_model(optimizer, replay_buffer, policy_net, target_net)
-
-            # Soft update of the target network's weights
-            # θ′ ← τ θ + (1 −τ )θ′
-            target_net_state_dict = target_net.state_dict()
-            policy_net_state_dict = policy_net.state_dict()
-
-            for key in policy_net_state_dict:
-                target_net_state_dict[key] = policy_net_state_dict[
-                    key
-                ] * TAU + target_net_state_dict[key] * (1 - TAU)
-            target_net.load_state_dict(target_net_state_dict)
+            # TEST: if we call this every time, will it overlearn the initial steps? The buffer
+            # is filled only with a batch worth of stuff, and it might overrepresent?
+            trainer.optimize_models(step)
 
             if done:
-                episode_durations.append(t + 1)
+                episode_durations.append(step + 1)
                 break
 
-
+# WIP: instantiate?
+def reset() -> None:
+    """Resets environment and agents."""
+    self.done = False
+    self.state = state
+    if isinstance(self.state, tuple):
+        self.state = self.state[0]
+   
+        
 if __name__ == "__main__":
     main()
