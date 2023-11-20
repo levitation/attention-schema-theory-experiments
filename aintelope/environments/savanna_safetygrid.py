@@ -34,20 +34,23 @@ from ai_safety_gridworlds.environments.aintelope.aintelope_smell import (
     FOOD_CHR,
 )
 
+from aintelope.environments.typing import (
+    ObservationFloat,
+    #PositionFloat,
+    #Action,
+    AgentId,
+    #AgentStates,
+    Observation,
+    Reward,    #  TODO: use np.ndarray or mo_reward
+    Info,
+)
+
 
 
 logger = logging.getLogger("aintelope.environments.savanna_safetygrid")
 
 # typing aliases
-ObservationFloat = np.float32
-#PositionFloat = np.float32
 Action = Actions  # int
-AgentId = str
-#AgentStates = Dict[AgentId, np.ndarray]
-
-Observation = np.ndarray
-Reward = float    #  TODO: use mo_reward and aggregate only before action selection
-Info = dict
 
 Step = Tuple[
     Dict[AgentId, Observation],
