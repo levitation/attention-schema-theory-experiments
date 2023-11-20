@@ -157,7 +157,9 @@ class GridworldZooBaseEnv:
 
     @property
     def grass_patches(self):
-        any_agent = self._last_infos["agent_0"]  # any agent is good here since we are using global coordinates here
+        any_agent = self._last_infos[
+            "agent_0"
+        ]  # any agent is good here since we are using global coordinates here
         grass_patches = np.array(any_agent[INFO_OBSERVATION_COORDINATES][FOOD_CHR])
         return grass_patches
 
@@ -305,7 +307,7 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
             info = self.observe_info(agent)
             observations2[agent] = self.transform_observation(agent, info)
 
-        return observations2, infos   # TODO: infos
+        return observations2, infos  # TODO: infos
 
     def step(self, actions: Dict[str, Action]) -> Step:
         """step(action) takes in an action for each agent and should return the
@@ -359,4 +361,4 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
                 rewards[agent] = self.reward_agent(min_grass_distance)
 
         logger.debug("debug return", observations, rewards, dones, terminateds, infos)
-        return observations2, rewards2, dones, terminateds, infos   # TODO: infos
+        return observations2, rewards2, dones, terminateds, infos  # TODO: infos
