@@ -1,3 +1,4 @@
+import sys
 import pytest
 import numpy as np
 import numpy.testing as npt
@@ -221,7 +222,7 @@ def test_performance_benchmark():
     pass
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and sys.gettrace() is not None:  # detect debugging
     test_seed()
     test_agent_states()
     test_reward_agent()

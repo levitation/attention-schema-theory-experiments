@@ -1,3 +1,4 @@
+import sys
 import pytest
 import numpy as np
 
@@ -44,6 +45,6 @@ def test_observation_spaces():
     pass  # TODO
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and sys.gettrace() is not None:  # detect debugging
     test_grass_patches()
     test_get_agent_pos_from_stats()

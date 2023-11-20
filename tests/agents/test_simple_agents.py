@@ -1,3 +1,4 @@
+import sys
 from typing import Tuple
 
 from omegaconf import OmegaConf, DictConfig
@@ -153,7 +154,7 @@ def test_iterativeweightoptimizationagent_in_savanna_gridworlds_parallel(
     run_episode(tparams=tparams, hparams=hparams)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and sys.gettrace() is not None:  # detect debugging
     tparams_hparams = tparams_hparams(root_dir())
     test_randomwalkagent_in_savanna_zoo_parallel(tparams_hparams)
     test_onestepperfectpredictionagent_in_savanna_zoo_parallel(tparams_hparams)
