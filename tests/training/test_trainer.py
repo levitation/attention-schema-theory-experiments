@@ -1,4 +1,5 @@
 import subprocess
+import os
 import sys
 import pytest
 from aintelope.config.config_utils import register_resolvers
@@ -8,7 +9,9 @@ from tests.test_config import constants
 
 def test_training_pipeline_main():
     if (
-        sys.gettrace() is not None
+        os.name
+        == "nt"  # for some reason sys.gettrace() is not None in case of GitHub test runner too
+        and sys.gettrace() is not None
     ):  # run all code in single process in case of debugging
         from aintelope.__main__ import aintelope_main
 
@@ -22,7 +25,9 @@ def test_training_pipeline_main():
 def test_training_pipeline_baseline():
     const = constants()
     if (
-        sys.gettrace() is not None
+        os.name
+        == "nt"  # for some reason sys.gettrace() is not None in case of GitHub test runner too
+        and sys.gettrace() is not None
     ):  # run all code in single process in case of debugging
         sys.argv = [
             "",
@@ -41,7 +46,9 @@ def test_training_pipeline_baseline():
 def test_training_pipeline_instinct():
     const = constants()
     if (
-        sys.gettrace() is not None
+        os.name
+        == "nt"  # for some reason sys.gettrace() is not None in case of GitHub test runner too
+        and sys.gettrace() is not None
     ):  # run all code in single process in case of debugging
         sys.argv = [
             "",
