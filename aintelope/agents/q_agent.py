@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import numpy as np
 import pandas as pd
-import torch
-from torch import nn
 
 from gymnasium.spaces import Discrete
 
@@ -19,16 +17,8 @@ from aintelope.agents import (
     register_agent_class,
 )
 
-# from aintelope.agents.memory import Experience
 from aintelope.environments.typing import (
     ObservationFloat,
-    PositionFloat,
-    Action,
-    AgentId,
-    AgentStates,
-    Observation,
-    Reward,
-    Info,
 )
 
 logger = logging.getLogger("aintelope.agents.q_agent")
@@ -147,7 +137,7 @@ class QAgent(Agent):
 
         self.trainer.update_memory(
             self.id, self.state, self.last_action, score, done, next_state
-        )  # exp)
+        )
         self.state = next_state
 
     def get_history(self) -> pd.DataFrame:
