@@ -250,20 +250,6 @@ class GridworldZooBaseEnv:
         StateTuple = namedtuple("StateTuple", {k: np.ndarray for k in keys})
         return StateTuple(**agent_coords, **grass_patches_coords, **water_holes_coords)
 
-    @property
-    def rewards(self):  # needed for tests
-        rewards = super(GridworldZooBaseEnv, self).rewards
-
-        rewards2 = {}
-        # transform rewards
-        for agent in rewards.keys():
-            min_grass_distance = self.calc_min_grass_distance(
-                agent, self._last_infos[agent]
-            )
-            rewards2[agent] = self.reward_agent(min_grass_distance)
-
-        return rewards2
-
     # This API is intended primarily as input for the neural network.
     # if observe_bitmap_layers == True then observe() method returns same value as observe_relative_bitmaps()
     # Relative observation bitmap is agent centric and considers the agent's observation radius. Environments with different sizes will have same-shaped relative observation bitmaps as long as the agent's observation radius is same.
@@ -427,23 +413,14 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         GridworldZooAecEnv.__init__(self, **self.super_initargs)
         self.init_observation_spaces()
         self._last_infos = {}
+        self._last_rewards2 = { agent: None for agent in self.possible_agents }   # Rewards should be only updated after step, not on each observation before step. Rewards should be initialised to None before any reset() is called so that .rewards property returns dictionary with existing agents.
         self.observations2 = {}
 
     @property
     def rewards(self):  # Needed for tests
-        rewards = GridworldZooAecEnv.rewards.fget(
-            self
-        )  # property needs .fget() to become callable
-
-        rewards2 = {}
-        # transform rewards
-        for agent in rewards.keys():
-            min_grass_distance = self.calc_min_grass_distance(
-                agent, self._last_infos[agent]
-            )
-            rewards2[agent] = self.reward_agent(min_grass_distance)
-
-        return rewards2
+        # NB! rewards should be only updated after step, not on each observation before step
+        return { agent: reward for agent, reward in self._last_rewards2.items() 
+                  if not self.terminations[agent] and not self.truncations[agent] }   # terminated agents are not allowed in .rewards, but we still need to store them in self._last_rewards2 so that the reward can be read via .last() method
 
     @property
     def infos(
@@ -487,6 +464,7 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
             self.observations2[agent] = self.transform_observation(agent, info)
 
         self._last_infos = infos
+        self._last_rewards2 = { agent: 0.0 for agent in self.possible_agents }   # Rewards should be initialised to 0.0 before any step is taken so that .rewards property returns dictionary with existing agents. NB! not calculating actual rewards yet, rewards should be only updated after step, not on each observation before step.
 
         if self._override_infos:
             infos = {agent: {} for agent in infos.keys()}
@@ -494,6 +472,10 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         return self.observations2, infos
 
     def last(self, observe=True):
+        """Returns observation, cumulative reward, terminated, truncated, info for the current agent (specified by self.agent_selection).
+        
+        If observe flag is True then current board state is observed. If observe flag is False then the observation that was made after current agent's latest move is returned."""
+
         observation, reward, terminated, truncated, info = GridworldZooAecEnv.last(
             self, observe=observe
         )
@@ -501,15 +483,13 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         agent = self.agent_selection
 
         if observe:
+            self._last_infos[agent] = info    # TODO: is this correct to update infos only when observe=True?
             observation2 = self.transform_observation(agent, info)
             self.observations2[agent] = observation2
         else:
             observation2 = None  # that's how Zoo api_test.py requires it
 
-        min_grass_distance = self.calc_min_grass_distance(agent, info)
-        reward2 = self.reward_agent(min_grass_distance)
-
-        self._last_infos[agent] = info
+        reward2 = self._last_rewards2[agent]   # rewards should be only updated after step, not on each observation before step
 
         if self._override_infos:
             info = {}
@@ -536,16 +516,16 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         # observe observations, transform observations and rewards
         info = self.observe_info(agent)
         # self.observe_from_location({agent: [1, 1]})    # for debugging
+        self._last_infos[agent] = info
         observation2 = self.transform_observation(agent, info)
         self.observations2[agent] = observation2
 
         min_grass_distance = self.calc_min_grass_distance(agent, info)
         reward2 = self.reward_agent(min_grass_distance)
+        self._last_rewards2[agent] = reward2
 
         terminated = self.terminations[agent]
         truncated = self.truncations[agent]
-
-        self._last_infos[agent] = info
 
         if self._override_infos:
             info = {}
@@ -592,10 +572,15 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
                 info = self.observe_info(agent)
                 # self.observe_from_location({agent: [1, 1]})    # for debugging
                 infos[agent] = info
+                self._last_infos[agent] = info
                 self.observations2[agent] = self.transform_observation(agent, info)
 
                 min_grass_distance = self.calc_min_grass_distance(agent, info)
-                rewards2[agent] = self.reward_agent(min_grass_distance)
+                reward2 = self.reward_agent(min_grass_distance)
+                rewards2[agent] = reward2
+                self._last_rewards2[agent] = reward2
+
+        #/ for index in range(0, self.num_agents)
 
         if (
             not self.observe_immediately_after_agent_action
@@ -605,15 +590,16 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
                 info = self.observe_info(agent)
                 # self.observe_from_location({agent: [1, 1]})    # for debugging
                 infos[agent] = info
+                self._last_infos[agent] = info
                 self.observations2[agent] = self.transform_observation(agent, info)
 
                 min_grass_distance = self.calc_min_grass_distance(agent, info)
-                rewards2[agent] = self.reward_agent(min_grass_distance)
+                reward2 = self.reward_agent(min_grass_distance)
+                rewards2[agent] = reward2
+                self._last_rewards2[agent] = reward2
 
         terminateds = self.terminations
         truncateds = self.truncations
-
-        self._last_infos = infos
 
         if self._override_infos:
             infos = {agent: {} for agent in infos.keys()}
