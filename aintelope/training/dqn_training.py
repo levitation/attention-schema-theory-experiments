@@ -52,6 +52,21 @@ class ReplayMemory(object):
         return len(self.memory)
 
 
+def load_checkpoint(PATH, obs_size, action_space):
+    # https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html
+    model = DQN(obs_size, action_space)
+    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+
+    checkpoint = torch.load(PATH)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    # epoch = checkpoint['epoch']
+    # loss = checkpoint['loss']
+
+    model.eval()
+    return model
+
+
 class Trainer:
     def __init__(self, params, n_observations, action_space):
         self.policy_nets = {}
@@ -91,10 +106,14 @@ class Trainer:
         observation: npt.NDArray[ObservationFloat] = None,
         step: int = 0,
     ) -> Optional[int]:
-        epsilon = max(
-            self.hparams.eps_end,
-            self.hparams.eps_start - step * 1 / self.hparams.eps_last_frame,
-        )
+        if step > 0:
+            epsilon = max(
+                self.hparams.eps_end,
+                self.hparams.eps_start - step * 1 / self.hparams.eps_last_frame,
+            )
+        else:
+            epsilon = 0.0
+
         if np.random.random() < epsilon:
             action = self.action_space(agent_id).sample()
         else:

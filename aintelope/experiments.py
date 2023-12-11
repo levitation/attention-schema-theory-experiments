@@ -3,8 +3,8 @@ from collections import namedtuple
 import logging
 from omegaconf import DictConfig
 
-# import hydra
 import os
+from pathlib import Path
 
 from pettingzoo import AECEnv, ParallelEnv
 from aintelope.environments.savanna_zoo import (
@@ -155,6 +155,12 @@ def run_experiment(cfg: DictConfig) -> None:
             dir_cp = dir_out + "checkpoints/"
             os.makedirs(dir_cp, exist_ok=True)
             trainer.save_models(i_episode, dir_cp)
+
+    record_path = Path(cfg.experiment_dir) / "memory_records.csv"
+    logger.info(f"Saving training records to disk at {record_path}")
+    record_path.parent.mkdir(exist_ok=True, parents=True)
+    for agent in agents:
+        agent.get_history().to_csv(record_path, index=False)
 
 
 # @hydra.main(version_base=None, config_path="config", config_name="config_experiment")

@@ -1,5 +1,6 @@
 from typing import Optional, Tuple, NamedTuple, List
 import logging
+import csv
 import numpy.typing as npt
 
 import matplotlib
@@ -7,8 +8,6 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import numpy as np
 import pandas as pd
-import torch
-from torch import nn
 
 from gymnasium.spaces import Discrete
 
@@ -19,16 +18,8 @@ from aintelope.agents import (
     register_agent_class,
 )
 
-# from aintelope.agents.memory import Experience
 from aintelope.environments.typing import (
     ObservationFloat,
-    PositionFloat,
-    Action,
-    AgentId,
-    AgentStates,
-    Observation,
-    Reward,
-    Info,
 )
 
 logger = logging.getLogger("aintelope.agents.q_agent")
@@ -109,7 +100,7 @@ class QAgent(Agent):
             done: boolean whether run is done
 
         Returns:
-            None
+            reward: float
         """
         next_state = observation
         # For future: add state (interoception) handling here when needed
@@ -147,12 +138,14 @@ class QAgent(Agent):
 
         self.trainer.update_memory(
             self.id, self.state, self.last_action, score, done, next_state
-        )  # exp)
+        )
         self.state = next_state
+        return score
 
     def get_history(self) -> pd.DataFrame:
         """
         Method to get the history of the agent. Note that warm_start_steps are excluded.
+        warm_start_steps not used atm.
         """
         return pd.DataFrame(
             columns=[
@@ -163,7 +156,7 @@ class QAgent(Agent):
                 "instinct_events",
                 "next_state",
             ],
-            data=self.history[self.warm_start_steps :],
+            data=self.history,  # self.warm_start_steps :],
         )
 
     @staticmethod
