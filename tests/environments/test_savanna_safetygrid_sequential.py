@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 import pytest
 import numpy as np
 import numpy.testing as npt
@@ -25,6 +26,9 @@ from aintelope.environments.env_utils.distance import distance_to_closest_item
 
 def test_gridworlds_api_sequential():
     # TODO: refactor these values out to a test-params file
+    # seed = int(time.time()) & 0xFFFFFFFF
+    # np.random.seed(seed)
+    # print(seed)
     env_params = {
         "num_iters": 500,  # duration of the game
         "map_min": 0,
@@ -33,8 +37,9 @@ def test_gridworlds_api_sequential():
         "amount_agents": 1,  # for now only one agent
         "amount_grass_patches": 2,
         "amount_water_holes": 2,
+        # "seed": seed,    # TODO
     }
-    sequential_env = SavannaGridworldSequentialEnv(env_params=env_params)
+    sequential_env = safetygrid.SavannaGridworldSequentialEnv(env_params=env_params)
     # TODO: Nathan was able to get the sequential-turn env to work, using this conversion, but not the parallel env. why??
     # sequential_env = parallel_to_aec(parallel_env)
     api_test(sequential_env, num_cycles=10, verbose_progress=True)
@@ -44,7 +49,7 @@ def test_gridworlds_seed():
     env_params = {
         "override_infos": True  # Zoo seed_test is unable to compare infos unless they have simple structure.
     }
-    sequential_env = lambda: SavannaGridworldSequentialEnv(
+    sequential_env = lambda: safetygrid.SavannaGridworldSequentialEnv(
         env_params=env_params
     )  # seed test requires lambda
     try:
