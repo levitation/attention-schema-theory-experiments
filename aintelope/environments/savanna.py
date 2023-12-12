@@ -306,8 +306,12 @@ class SavannaEnv:
         infos: Dict[AgentId, dict] = {agent: {} for agent in self.agents}
 
         if env_done:
-            self.agents = []
+            self.agents = (
+                []
+            )  # TODO: normally when one agent dies, then only that dead agent should be removed from self.agents
         logger.debug("debug return", observations, self.rewards, self.dones, infos)
+
+        # TODO: activate next agent and save in self.agent_selection
 
         terminateds = {key: False for key in self.dones.keys()}
         return observations, self.rewards, self.dones, terminateds, infos

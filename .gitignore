@@ -148,6 +148,8 @@ tags
 
 # pytorch_lightning
 **/lightning_logs
+
+# locally editable requirements
 /ai_safety_gridworlds
 /pettingzoo
 /pycolab

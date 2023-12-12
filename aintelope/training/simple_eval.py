@@ -101,13 +101,15 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
         n_observations = len(  # TODO: support for 3D-observation cube
             observations["agent_0"]
         )
-    else:
+    elif isinstance(env, AECEnv):
         env.reset()
         # TODO: each agent has their own observation size    # observation_space and action_space require agent argument: https://pettingzoo.farama.org/content/basic_usage/#additional-environment-api
         observation = env.observe(
             "agent_0"
         )  # TODO: each agent has their own state, refactor
         n_observations = len(observation)  # TODO: support for 3D-observation cube
+    else:
+        raise NotImplementedError(f"Unknown environment type {type(env)}")
 
     # Common trainer for each agent's models
     cfg = OmegaConf.merge(hparams, tparams)
@@ -153,6 +155,8 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
             )
         ]
 
+    agents_dict = {agent.id: agent for agent in agents}
+
     episode_rewards = Counter(
         {agent: 0.0 for agent in agents}
     )  # cannot use list since some of the agents may be terminated in the middle of the episode
@@ -162,10 +166,13 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
     warm_start_steps = hparams["warm_start_steps"]
 
     for step in range(warm_start_steps):
-        epsilon = 1.0  # forces random action for warmup steps
+        # epsilon = 1.0  # forces random action for warmup steps
         if env_type == "zoo":
             dones = {}
-            for agent in agents:  # TODO: use env's agent iterator
+            for agent_id in env.agent_iter(
+                max_iter=env.num_agents
+            ):  # num_agents returns number of alive (non-done) agents
+                agent = agents_dict[agent_id]
                 observation = env.observe(agent.id)  # TODO: parallel env support
                 # agent doesn't get to play_step, only env can, for multi-agent env compatibility
                 # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
@@ -181,7 +188,7 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
                 logger.debug("debug step")
                 logger.debug(env.__dict__)
 
-                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and cannot return values else Zoo API tests will fail.
+                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
                 (
                     observation,
                     reward,
@@ -211,14 +218,19 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
         if all(dones.values()):
             break
 
+    step = -1
     while not all(dones.values()):
-        epsilon = max(
-            hparams["eps_end"],
-            hparams["eps_start"] - env.num_moves * 1 / hparams["eps_last_frame"],
-        )
+        step += 1  # for debugging
+        # epsilon = max(
+        #    hparams["eps_end"],
+        #    hparams["eps_start"] - env.num_moves * 1 / hparams["eps_last_frame"],
+        # )
         if env_type == "zoo":
-            actions = {}
-            for agent in agents:  # TODO: use env's agent iterator
+            rewards = {}
+            for agent_id in env.agent_iter(
+                max_iter=env.num_agents
+            ):  # num_agents returns number of alive (non-done) agents
+                agent = agents_dict[agent_id]
                 # agent doesn't get to play_step, only env can, for multi-agent env compatibility
                 # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
                 action = action_space("agent_0").sample()  # TODO: agent.get_action()
@@ -233,7 +245,7 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
                 logger.debug("debug step")
                 logger.debug(env.__dict__)
 
-                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and cannot return values else Zoo API tests will fail.
+                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
                 (
                     observation,
                     reward,
@@ -246,8 +258,10 @@ def run_episode(tparams: DictConfig, hparams: DictConfig) -> None:
                 logger.debug((observation, reward, terminated, truncated, info))
                 done = terminated or truncated
                 dones[agent.id] = done
+                rewards[agent] = reward
         else:
             # the assumption by non-zoo env will be 1 agent generally I think
+            rewards = {}
             for agent, model in zip(agents, models):
                 reward, score, done = agent.play_step(model, epsilon, tparams["device"])
                 dones[agent.id] = done

@@ -56,13 +56,15 @@ def run_experiment(cfg: DictConfig) -> None:
         n_observations = len(  # TODO: support for 3D-observation cube
             observations["agent_0"]
         )
-    else:
+    elif isinstance(env, AECEnv):
         env.reset()
         # TODO: each agent has their own observation size    # observation_space and action_space require agent argument: https://pettingzoo.farama.org/content/basic_usage/#additional-environment-api
         observation = env.observe(
             "agent_0"
         )  # TODO: each agent has their own state, refactor
         n_observations = len(observation)  # TODO: support for 3D-observation cube
+    else:
+        raise NotImplementedError(f"Unknown environment type {type(env)}")
 
     # Common trainer for each agent's models
     trainer = Trainer(
@@ -85,6 +87,8 @@ def run_experiment(cfg: DictConfig) -> None:
         observation = env.observe(agent_id)
         agents[-1].reset(observation)
         trainer.add_agent(agent_id)
+
+    agents_dict = {agent.id: agent for agent in agents}
 
     # Warmup not supported atm, would be here
     # for _ in range(hparams.warm_start_steps):
@@ -137,9 +141,11 @@ def run_experiment(cfg: DictConfig) -> None:
 
             elif isinstance(env, AECEnv):
                 # loop: observe, collect action, send action, get observation, update
-                for (
-                    agent  # TODO: use env's agent iterator
-                ) in agents:  # TODO: the order of agents needs to be obtained from env
+                for agent_id in env.agent_iter(
+                    max_iter=env.num_agents
+                ):  # num_agents returns number of alive (non-done) agents
+                    agent = agents_dict[agent_id]
+
                     observation = env.observe(agent.id)
                     action = agent.get_action(observation, step)
 
