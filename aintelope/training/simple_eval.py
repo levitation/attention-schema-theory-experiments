@@ -158,7 +158,7 @@ def run_episode(full_params: Dict) -> None:
     agents_dict = {agent.id: agent for agent in agents}
 
     episode_rewards = Counter(
-        {agent: 0.0 for agent in agents}
+        {agent.id: 0.0 for agent in agents}
     )  # cannot use list since some of the agents may be terminated in the middle of the episode
     dones = {
         agent.id: False for agent in agents
