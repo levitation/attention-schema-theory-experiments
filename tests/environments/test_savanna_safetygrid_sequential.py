@@ -71,7 +71,7 @@ def test_gridworlds_api_sequential_with_death():
 
 def test_gridworlds_seed():
     for index in range(
-        0, 3
+        0, 10
     ):  # construct the environment multiple times with different seeds
         env_params = {
             "override_infos": True,  # Zoo seed_test is unable to compare infos unless they have simple structure.
