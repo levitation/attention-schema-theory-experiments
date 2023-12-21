@@ -161,7 +161,7 @@ def run_episode(full_params: Dict) -> None:
         {agent: 0.0 for agent in agents}
     )  # cannot use list since some of the agents may be terminated in the middle of the episode
     dones = {
-        agent: False for agent in agents
+        agent.id: False for agent in agents
     }  # cannot use list since some of the agents may be terminated in the middle of the episode
     warm_start_steps = hparams["warm_start_steps"]
 
@@ -194,42 +194,46 @@ def run_episode(full_params: Dict) -> None:
                 )
 
             elif isinstance(env, AECEnv):
-	            for agent_id in env.agent_iter(
-	                max_iter=env.num_agents
-	            ):  # num_agents returns number of alive (non-done) agents
-	                agent = agents_dict[agent_id]
-	                observation = env.observe(agent.id)  # TODO: parallel env support
-	                # agent doesn't get to play_step, only env can, for multi-agent env compatibility
-	                # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
-	                # Per Zoo API, a dead agent must call .step(None) once more after becoming dead. Only after that call will this dead agent be removed from various dictionaries and from .agent_iter loop.
-	                if env.terminations[agent_id] or env.truncations[agent.id]:
-	                    action = None
-	                else:
-	                    # action = action_space(agent.id).sample()
-	                    action = agent.get_action(
-	                        observation,
-	                        step=0,
-	                    )
+                for agent_id in env.agent_iter(
+                    max_iter=env.num_agents
+                ):  # num_agents returns number of alive (non-done) agents
+                    agent = agents_dict[agent_id]
+                    observation = env.observe(agent.id)  # TODO: parallel env support
+                    # agent doesn't get to play_step, only env can, for multi-agent env compatibility
+                    # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
+                    # Per Zoo API, a dead agent must call .step(None) once more after becoming dead. Only after that call will this dead agent be removed from various dictionaries and from .agent_iter loop.
+                    if env.terminations[agent_id] or env.truncations[agent.id]:
+                        action = None
+                    else:
+                        # action = action_space(agent.id).sample()
+                        action = agent.get_action(
+                            observation,
+                            step,  # TODO: there was step=0 but we have step index available in this iteration. So is it okay if I use the step variable here?
+                        )
 
-	                logger.debug("debug action", action)
-	                logger.debug("debug step")
-	                logger.debug(env.__dict__)
+                    logger.debug("debug action", action)
+                    logger.debug("debug step")
+                    logger.debug(env.__dict__)
 
-	                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
-	                result = env.step_single_agent(action)  # TODO: parallel env support
+                    # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
+                    result = env.step_single_agent(action)  # TODO: parallel env support
 
-	                if agent.id in env.agents:  # was not "dead step"
-	                    (
-	                        observation,
-	                        reward,  # NB! This is only initial reward upon agent's own step. When other agents take their turns then the reward of the agent may change. If you need to learn an agent's accumulated reward over other agents turns (plus its own step's reward) then use env.last property.
-	                        terminated,
-	                        truncated,
-	                        info,
-	                    ) = result
+                    if agent.id in env.agents:  # was not "dead step"
+                        (
+                            observation,
+                            reward,  # NB! This is only initial reward upon agent's own step. When other agents take their turns then the reward of the agent may change. If you need to learn an agent's accumulated reward over other agents turns (plus its own step's reward) then use env.last property.
+                            terminated,
+                            truncated,
+                            info,
+                        ) = result
 
-	                    logger.debug((observation, reward, terminated, truncated, info))
-	                    done = terminated or truncated
-	                    dones[agent.id] = done
+                        logger.debug((observation, reward, terminated, truncated, info))
+
+                        # NB! any agent could die at any other agent's step
+                        for agent_id in env.agents:
+                            dones[agent_id] = (
+                                env.terminations[agent_id] or env.truncations[agent.id]
+                            )
 
         else:
             logger.warning("Simple_eval: non-zoo env, test not yet implemented!")
@@ -237,7 +241,7 @@ def run_episode(full_params: Dict) -> None:
 
         if any(dones.values()):
             for agent in agents:
-                if dones.get(agent.id, False) and verbose:
+                if dones[agent.id] and verbose:
                     logger.warning(
                         f"Uhoh! Your agent {agent.id} terminated during warmup"
                         "on step {step}/{warm_start_steps}"
@@ -280,42 +284,46 @@ def run_episode(full_params: Dict) -> None:
                 # rewards is already in a proper format here
 
             elif isinstance(env, AECEnv):
-	            for agent_id in env.agent_iter(
-	                max_iter=env.num_agents
-	            ):  # num_agents returns number of alive (non-done) agents
-	                agent = agents_dict[agent_id]
-	                # agent doesn't get to play_step, only env can, for multi-agent env compatibility
-	                # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
-	                # Per Zoo API, a dead agent must call .step(None) once more after becoming dead. Only after that call will this dead agent be removed from various dictionaries and from .agent_iter loop.
-	                if env.terminations[agent_id] or env.truncations[agent.id]:
-	                    action = None
-	                else:
-	                    # action = action_space(agent.id).sample()
-	                    action = agent.get_action(
-	                        observation,
-	                        step=0,
-	                    )
+                for agent_id in env.agent_iter(
+                    max_iter=env.num_agents
+                ):  # num_agents returns number of alive (non-done) agents
+                    agent = agents_dict[agent_id]
+                    # agent doesn't get to play_step, only env can, for multi-agent env compatibility
+                    # reward, score, done = agent.play_step(nets[i], epsilon=1.0)
+                    # Per Zoo API, a dead agent must call .step(None) once more after becoming dead. Only after that call will this dead agent be removed from various dictionaries and from .agent_iter loop.
+                    if env.terminations[agent_id] or env.truncations[agent.id]:
+                        action = None
+                    else:
+                        # action = action_space(agent.id).sample()
+                        action = agent.get_action(
+                            observation,
+                            step,  # TODO: there was step=0 but we have step index available in this iteration. So is it okay if I use the step variable here?
+                        )
 
-	                logger.debug("debug action", action)
-	                logger.debug("debug step")
-	                logger.debug(env.__dict__)
+                    logger.debug("debug action", action)
+                    logger.debug("debug step")
+                    logger.debug(env.__dict__)
 
-	                # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
-	                result = env.step_single_agent(action)  # TODO: parallel env support
+                    # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope provide slightly modified Zoo API. Normal Zoo sequential API step() method does not return values and is not allowed to return values else Zoo API tests will fail.
+                    result = env.step_single_agent(action)  # TODO: parallel env support
 
-	                if agent.id in env.agents:  # was not "dead step"
-	                    (
-	                        observation,
-	                        reward,  # NB! This is only initial reward upon agent's own step. When other agents take their turns then the reward of the agent may change. If you need to learn an agent's accumulated reward over other agents turns (plus its own step's reward) then use env.last property.
-	                        terminated,
-	                        truncated,
-	                        info,
-	                    ) = result
+                    if agent.id in env.agents:  # was not "dead step"
+                        (
+                            observation,
+                            reward,  # NB! This is only initial reward upon agent's own step. When other agents take their turns then the reward of the agent may change. If you need to learn an agent's accumulated reward over other agents turns (plus its own step's reward) then use env.last property.
+                            terminated,
+                            truncated,
+                            info,
+                        ) = result
 
-	                    logger.debug((observation, reward, terminated, truncated, info))
-	                    done = terminated or truncated
-	                    dones[agent.id] = done
-	                    rewards[agent] = reward
+                        logger.debug((observation, reward, terminated, truncated, info))
+                        rewards[agent] = reward
+
+                        # NB! any agent could die at any other agent's step
+                        for agent_id in env.agents:
+                            dones[agent_id] = (
+                                env.terminations[agent_id] or env.truncations[agent.id]
+                            )
         else:
             logger.warning("Simple_eval: non-zoo env, test not yet implemented!")
             pass

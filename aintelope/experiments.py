@@ -74,6 +74,7 @@ def run_experiment(cfg: DictConfig) -> None:
             observation
         )  # TODO: is this reset necessary here? In main loop below, there is also a reset call
         trainer.add_agent(agent_id, observation.shape, env.action_space)
+        dones[agent_id] = False
 
     # Warmup NIY
     # for _ in range(hparams.warm_start_steps):
@@ -161,12 +162,21 @@ def run_experiment(cfg: DictConfig) -> None:
                         done = terminated or truncated
 
                         # Agent is updated based on what the env shows. All commented above included ^
-                        dones[agent.id] = done
                         if terminated:
-                            observation = None
+                            observation = None  # TODO: why is this here?
                         agent.update(
-                            env, observation, score, done
+                            env,
+                            observation,
+                            score,
+                            done,  # TODO: should it be "terminated" in place of "done" here?
                         )  # note that score is used ONLY by baseline
+
+                        # NB! any agent could die at any other agent's step
+                        for agent_id in env.agents:
+                            dones[agent_id] = (
+                                env.terminations[agent_id] or env.truncations[agent.id]
+                            )
+                            # TODO: if the agent died during some other agents step, should we call agent.update() on the dead agent, else it will be never called?
 
             else:
                 raise NotImplementedError(f"Unknown environment type {type(env)}")

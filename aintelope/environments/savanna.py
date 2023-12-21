@@ -297,6 +297,7 @@ class SavannaEnv:
             )
             self.rewards[agent] = reward_agent(min_grass_distance)
 
+            # NB! any agent could die at any other agent's step
             if (
                 self.metadata["test_death"]
                 and self.np_random.random() < self.metadata["test_death_probability"]
