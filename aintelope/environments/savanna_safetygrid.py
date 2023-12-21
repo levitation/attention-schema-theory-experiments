@@ -552,8 +552,9 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         reward2 = self.reward_agent(min_grass_distance)
         self._last_rewards2[agent] = reward2
 
-        # NB! if the action of current agent somehow affects the rewards of other agents then the cumulative reward of the other agents needs to be updated here as well.
-        self._cumulative_rewards2[agent] += reward2
+        # NB! cumulative reward should be calculated for all agents
+        for agent in self.agents:
+            self._cumulative_rewards2[agent] += self._last_rewards2[agent]
 
     def step_single_agent(self, action: Action):
         """step(action) takes in an action for each agent and should return the
@@ -594,8 +595,9 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
         reward2 = self.reward_agent(min_grass_distance)
         self._last_rewards2[agent] = reward2
 
-        # NB! if the action of current agent somehow affects the rewards of other agents then the cumulative reward of the other agents needs to be updated here as well.
-        self._cumulative_rewards2[agent] += reward2
+        # NB! cumulative reward should be calculated for all agents
+        for agent in self.agents:
+            self._cumulative_rewards2[agent] += self._last_rewards2[agent]
 
         terminated = self.terminations[agent]
         truncated = self.truncations[agent]
