@@ -24,21 +24,19 @@ def test_training_pipeline_main():
         assert ret.returncode == 0, "Trainer from __main__ caused an error!"
 
 
-def test_training_pipeline_main_with_dead_agents():
+@pytest.mark.parametrize("execution_number", range(10))
+def test_training_pipeline_main_with_dead_agents(execution_number):
     # run all code in single process always in order to pass seed argument
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        sys.argv = [
-            "",
-            "hparams.env=savanna-zoo-sequential-v2",
-            "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
-            "hparams.env_type=zoo",
-            "hparams.env_params.seed=" + str(index),
-            "hparams.env_params.test_death=True",
-        ]
-        aintelope_main()
-        sys.argv = [""]
+    sys.argv = [
+        "",
+        "hparams.env=savanna-zoo-sequential-v2",
+        "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
+        "hparams.env_type=zoo",
+        "hparams.env_params.seed=" + str(execution_number),
+        "hparams.env_params.test_death=True",
+    ]
+    aintelope_main()
+    sys.argv = [""]
 
 
 def test_training_pipeline_baseline():
@@ -61,25 +59,23 @@ def test_training_pipeline_baseline():
         assert ret.returncode == 0, "Trainer baseline caused an error!"
 
 
-def test_training_pipeline_baseline_with_dead_agents():
+@pytest.mark.parametrize("execution_number", range(10))
+def test_training_pipeline_baseline_with_dead_agents(execution_number):
     # run all code in single process always in order to pass seed argument
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        # TODO: find a way to parse Makefile and get sys.argv that way
-        # sys.argv = [""] + shlex.split(const.BASELINE_ARGS, comments=False, posix=True) # posix=True removes quotes around arguments
-        sys.argv = [
-            "",
-            "hparams.env=savanna-zoo-sequential-v2",
-            "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
-            "hparams.env_type=zoo",
-            "hparams.agent_id=q_agent",
-            "hparams.agent_params.target_instincts=[]",
-            "hparams.env_params.seed=" + str(index),
-            "hparams.env_params.test_death=True",
-        ]
-        aintelope_main()
-        sys.argv = [""]
+    # TODO: find a way to parse Makefile and get sys.argv that way
+    # sys.argv = [""] + shlex.split(const.BASELINE_ARGS, comments=False, posix=True) # posix=True removes quotes around arguments
+    sys.argv = [
+        "",
+        "hparams.env=savanna-zoo-sequential-v2",
+        "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
+        "hparams.env_type=zoo",
+        "hparams.agent_id=q_agent",
+        "hparams.agent_params.target_instincts=[]",
+        "hparams.env_params.seed=" + str(execution_number),
+        "hparams.env_params.test_death=True",
+    ]
+    aintelope_main()
+    sys.argv = [""]
 
 
 def test_training_pipeline_instinct():
@@ -102,25 +98,23 @@ def test_training_pipeline_instinct():
         assert ret.returncode == 0, "Trainer baseline caused an error!"
 
 
-def test_training_pipeline_instinct_with_dead_agents():
+@pytest.mark.parametrize("execution_number", range(10))
+def test_training_pipeline_instinct_with_dead_agents(execution_number):
     # run all code in single process always in order to pass seed argument
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        # TODO: find a way to parse Makefile and get sys.argv that way
-        # sys.argv = [""] + shlex.split(const.INSTINCT_ARGS, comments=False, posix=True) # posix=True removes quotes around arguments
-        sys.argv = [
-            "",
-            "hparams.env=savanna-zoo-sequential-v2",
-            "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
-            "hparams.env_type=zoo",
-            "hparams.agent_id=instinct_agent",
-            "hparams.agent_params.target_instincts=[smell]",
-            "hparams.env_params.seed=" + str(index),
-            "hparams.env_params.test_death=True",
-        ]
-        aintelope_main()
-        sys.argv = [""]
+    # TODO: find a way to parse Makefile and get sys.argv that way
+    # sys.argv = [""] + shlex.split(const.INSTINCT_ARGS, comments=False, posix=True) # posix=True removes quotes around arguments
+    sys.argv = [
+        "",
+        "hparams.env=savanna-zoo-sequential-v2",
+        "hparams.env_entry_point=aintelope.environments.savanna_zoo:SavannaZooSequentialEnv",
+        "hparams.env_type=zoo",
+        "hparams.agent_id=instinct_agent",
+        "hparams.agent_params.target_instincts=[smell]",
+        "hparams.env_params.seed=" + str(execution_number),
+        "hparams.env_params.test_death=True",
+    ]
+    aintelope_main()
+    sys.argv = [""]
 
 
 if __name__ == "__main__" and os.name == "nt":  # detect debugging

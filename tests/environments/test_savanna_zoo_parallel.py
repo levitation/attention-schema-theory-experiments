@@ -23,60 +23,54 @@ from aintelope.environments.savanna_zoo import SavannaZooParallelEnv
 from aintelope.environments.env_utils.distance import distance_to_closest_item
 
 
-def test_pettingzoo_api_parallel():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        # TODO: refactor these values out to a test-params file
-        env_params = {
-            "num_iters": 500,  # duration of the game
-            "map_min": 0,
-            "map_max": 100,
-            "render_map_max": 100,
-            "amount_agents": 1,  # for now only one agent
-            "amount_grass_patches": 2,
-            "amount_water_holes": 2,
-        }
-        env = zoo.SavannaZooParallelEnv(env_params=env_params)
-        env.seed(index)
+@pytest.mark.parametrize("execution_number", range(10))
+def test_pettingzoo_api_parallel(execution_number):
+    # TODO: refactor these values out to a test-params file
+    env_params = {
+        "num_iters": 500,  # duration of the game
+        "map_min": 0,
+        "map_max": 100,
+        "render_map_max": 100,
+        "amount_agents": 1,  # for now only one agent
+        "amount_grass_patches": 2,
+        "amount_water_holes": 2,
+    }
+    env = zoo.SavannaZooParallelEnv(env_params=env_params)
+    env.seed(execution_number)
 
-        # sequential_env = parallel_to_aec(env)
-        parallel_api_test(env, num_cycles=10)
+    # sequential_env = parallel_to_aec(env)
+    parallel_api_test(env, num_cycles=10)
 
 
-def test_pettingzoo_api_parallel_with_death():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        # TODO: refactor these values out to a test-params file
-        env_params = {
-            "num_iters": 500,  # duration of the game
-            "map_min": 0,
-            "map_max": 100,
-            "render_map_max": 100,
-            "amount_agents": 2,  # needed for death test
-            "amount_grass_patches": 2,
-            "amount_water_holes": 2,
-            "test_death": True,
-        }
-        env = zoo.SavannaZooParallelEnv(env_params=env_params)
-        env.seed(index)
+@pytest.mark.parametrize("execution_number", range(10))
+def test_pettingzoo_api_parallel_with_death(execution_number):
+    # TODO: refactor these values out to a test-params file
+    env_params = {
+        "num_iters": 500,  # duration of the game
+        "map_min": 0,
+        "map_max": 100,
+        "render_map_max": 100,
+        "amount_agents": 2,  # needed for death test
+        "amount_grass_patches": 2,
+        "amount_water_holes": 2,
+        "test_death": True,
+    }
+    env = zoo.SavannaZooParallelEnv(env_params=env_params)
+    env.seed(execution_number)
 
-        # sequential_env = parallel_to_aec(env)
-        parallel_api_test(env, num_cycles=10)
+    # sequential_env = parallel_to_aec(env)
+    parallel_api_test(env, num_cycles=10)
 
 
-def test_zoo_seed():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        np.random.seed(index)
+@pytest.mark.parametrize("execution_number", range(10))
+def test_zoo_seed(execution_number):
+    np.random.seed(execution_number)
 
-        try:
-            parallel_seed_test(zoo.SavannaZooParallelEnv, num_cycles=10)
-        except TypeError:
-            # for some reason the test env in Git does not recognise the num_cycles neither as named or positional argument
-            parallel_seed_test(zoo.SavannaZooParallelEnv)
+    try:
+        parallel_seed_test(zoo.SavannaZooParallelEnv, num_cycles=10)
+    except TypeError:
+        # for some reason the test env in Git does not recognise the num_cycles neither as named or positional argument
+        parallel_seed_test(zoo.SavannaZooParallelEnv)
 
 
 def test_zoo_agent_states():
@@ -93,35 +87,29 @@ def test_zoo_agent_states():
     )
 
 
-def test_zoo_reward_agent():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        env = zoo.SavannaZooParallelEnv()
-        env.reset(seed=index)
-        # single grass patch
-        agent_pos = np.random.randint(
-            env.metadata["map_min"], env.metadata["map_max"], 2
-        )
-        grass_patch = np.random.randint(
-            env.metadata["map_min"], env.metadata["map_max"], 2
-        )
-        min_grass_distance = distance_to_closest_item(agent_pos, grass_patch)
-        reward_single = zoo.reward_agent(min_grass_distance)
-        # assert reward_single == 1 / (1 + vec_distance(grass_patch, agent_pos))
-        assert reward_single >= 0.0 and reward_single <= 1.0
+@pytest.mark.parametrize("execution_number", range(10))
+def test_zoo_reward_agent(execution_number):
+    env = zoo.SavannaZooParallelEnv()
+    env.reset(seed=execution_number)
+    # single grass patch
+    agent_pos = np.random.randint(env.metadata["map_min"], env.metadata["map_max"], 2)
+    grass_patch = np.random.randint(env.metadata["map_min"], env.metadata["map_max"], 2)
+    min_grass_distance = distance_to_closest_item(agent_pos, grass_patch)
+    reward_single = zoo.reward_agent(min_grass_distance)
+    # assert reward_single == 1 / (1 + vec_distance(grass_patch, agent_pos))
+    assert reward_single >= 0.0 and reward_single <= 1.0
 
-        # multiple grass patches
-        grass_patches = np.random.randint(
-            env.metadata["map_min"], env.metadata["map_max"], size=(10, 2)
-        )
-        min_grass_distance = distance_to_closest_item(agent_pos, grass_patches)
-        reward_many = zoo.reward_agent(min_grass_distance)
-        grass_patch_closest = grass_patches[
-            np.argmin(np.linalg.norm(np.subtract(grass_patches, agent_pos), axis=1))
-        ]
-        # assert reward_many == 1 / (1 + vec_distance(grass_patch_closest, agent_pos))
-        assert reward_many >= 0.0 and reward_many <= 1.0
+    # multiple grass patches
+    grass_patches = np.random.randint(
+        env.metadata["map_min"], env.metadata["map_max"], size=(10, 2)
+    )
+    min_grass_distance = distance_to_closest_item(agent_pos, grass_patches)
+    reward_many = zoo.reward_agent(min_grass_distance)
+    grass_patch_closest = grass_patches[
+        np.argmin(np.linalg.norm(np.subtract(grass_patches, agent_pos), axis=1))
+    ]
+    # assert reward_many == 1 / (1 + vec_distance(grass_patch_closest, agent_pos))
+    assert reward_many >= 0.0 and reward_many <= 1.0
 
 
 def test_zoo_move_agent():
@@ -157,56 +145,53 @@ def test_zoo_move_agent():
         assert agent_states[agent].dtype == zoo.PositionFloat
 
 
-def test_zoo_step_result():
-    for test_index in range(0, 10):
-        env = zoo.SavannaZooParallelEnv(
-            env_params={"num_iters": 2}
-        )  # default is 1 iter which means that the env is done after 1 step below and the test will fail
-        num_agents = len(env.possible_agents)
-        assert num_agents, f"expected 1 agent, got: {num_agents}"
-        env.seed(test_index)
-        env.reset()
+@pytest.mark.parametrize("execution_number", range(10))
+def test_zoo_step_result(execution_number):
+    env = zoo.SavannaZooParallelEnv(
+        env_params={"num_iters": 2}
+    )  # default is 1 iter which means that the env is done after 1 step below and the test will fail
+    num_agents = len(env.possible_agents)
+    assert num_agents, f"expected 1 agent, got: {num_agents}"
+    env.seed(execution_number)
+    env.reset()
 
-        agent = env.possible_agents[0]
+    agent = env.possible_agents[0]
+    action = {agent: env.action_space(agent).sample()}
+
+    observations, rewards, terminateds, truncateds, infos = env.step(action)
+    dones = {
+        key: terminated or truncateds[key] for (key, terminated) in terminateds.items()
+    }
+
+    assert not dones[agent]
+    assert isinstance(observations, dict), "observations is not a dict"
+    assert isinstance(
+        observations[agent], np.ndarray
+    ), "observations of agent is not an array"
+    assert isinstance(rewards, dict), "rewards is not a dict"
+    assert isinstance(rewards[agent], np.float64), "reward of agent is not a float64"
+
+
+@pytest.mark.parametrize("execution_number", range(10))
+def test_zoo_done_step(execution_number):
+    env = zoo.SavannaZooParallelEnv(env_params={"amount_agents": 1})
+    assert len(env.possible_agents) == 1
+    env.seed(execution_number)
+    env.reset()
+
+    agent = env.possible_agents[0]  # TODO: multi-agent iteration
+    for _ in range(env.metadata["num_iters"]):
         action = {agent: env.action_space(agent).sample()}
-
-        observations, rewards, terminateds, truncateds, infos = env.step(action)
+        _, _, terminateds, truncateds, _ = env.step(action)
         dones = {
             key: terminated or truncateds[key]
             for (key, terminated) in terminateds.items()
         }
 
-        assert not dones[agent]
-        assert isinstance(observations, dict), "observations is not a dict"
-        assert isinstance(
-            observations[agent], np.ndarray
-        ), "observations of agent is not an array"
-        assert isinstance(rewards, dict), "rewards is not a dict"
-        assert isinstance(
-            rewards[agent], np.float64
-        ), "reward of agent is not a float64"
-
-
-def test_zoo_done_step():
-    for test_index in range(0, 10):
-        env = zoo.SavannaZooParallelEnv(env_params={"amount_agents": 1})
-        assert len(env.possible_agents) == 1
-        env.seed(test_index)
-        env.reset()
-
-        agent = env.possible_agents[0]  # TODO: multi-agent iteration
-        for _ in range(env.metadata["num_iters"]):
-            action = {agent: env.action_space(agent).sample()}
-            _, _, terminateds, truncateds, _ = env.step(action)
-            dones = {
-                key: terminated or truncateds[key]
-                for (key, terminated) in terminateds.items()
-            }
-
-        assert dones[agent]
-        with pytest.raises(ValueError):
-            action = {agent: env.action_space(agent).sample()}
-            env.step(action)
+    assert dones[agent]
+    with pytest.raises(ValueError):
+        action = {agent: env.action_space(agent).sample()}
+        env.step(action)
 
 
 def test_zoo_agents():

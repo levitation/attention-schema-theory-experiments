@@ -23,7 +23,8 @@ from aintelope.environments.savanna_safetygrid import SavannaGridworldParallelEn
 from aintelope.environments.env_utils.distance import distance_to_closest_item
 
 
-def test_gridworlds_api_parallel():
+@pytest.mark.parametrize("execution_number", range(10))
+def test_gridworlds_api_parallel(execution_number):
     # TODO: refactor these values out to a test-params file
     env_params = {
         "num_iters": 500,  # duration of the game
@@ -35,49 +36,46 @@ def test_gridworlds_api_parallel():
         "amount_water_holes": 2,
     }
     env = safetygrid.SavannaGridworldParallelEnv(env_params=env_params)
+    env.seed(execution_number)
 
     # sequential_env = parallel_to_aec(env)
     parallel_api_test(env, num_cycles=10)
 
 
-def test_gridworlds_api_parallel_with_death():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        # TODO: refactor these values out to a test-params file
-        env_params = {
-            "num_iters": 500,  # duration of the game
-            "map_min": 0,
-            "map_max": 100,
-            "render_map_max": 100,
-            "amount_agents": 2,  # needed for death test
-            "amount_grass_patches": 2,
-            "amount_water_holes": 2,
-            "test_death": True,
-            "seed": index,  # for Gridworlds, the seed needs to be specified during environment construction since it affects map randomisation, while seed called later does not change map
-        }
-        env = safetygrid.SavannaGridworldParallelEnv(env_params=env_params)
+@pytest.mark.parametrize("execution_number", range(10))
+def test_gridworlds_api_parallel_with_death(execution_number):
+    # TODO: refactor these values out to a test-params file
+    env_params = {
+        "num_iters": 500,  # duration of the game
+        "map_min": 0,
+        "map_max": 100,
+        "render_map_max": 100,
+        "amount_agents": 2,  # needed for death test
+        "amount_grass_patches": 2,
+        "amount_water_holes": 2,
+        "test_death": True,
+        "seed": execution_number,  # for Gridworlds, the seed needs to be specified during environment construction since it affects map randomisation, while seed called later does not change map
+    }
+    env = safetygrid.SavannaGridworldParallelEnv(env_params=env_params)
 
-        # sequential_env = parallel_to_aec(env)
-        parallel_api_test(env, num_cycles=10)
+    # sequential_env = parallel_to_aec(env)
+    parallel_api_test(env, num_cycles=10)
 
 
-def test_gridworlds_seed():
-    for index in range(
-        0, 10
-    ):  # construct the environment multiple times with different seeds
-        env_params = {
-            "override_infos": True,  # Zoo parallel_seed_test is unable to compare infos unless they have simple structure.
-            "seed": index,  # for Gridworlds, the seed needs to be specified during environment construction since it affects map randomisation, while seed called later does not change map
-        }
-        env = lambda: safetygrid.SavannaGridworldParallelEnv(
-            env_params=env_params
-        )  # seed test requires lambda
-        try:
-            parallel_seed_test(env, num_cycles=10)
-        except TypeError:
-            # for some reason the test env in Git does not recognise the num_cycles neither as named or positional argument
-            parallel_seed_test(env)
+@pytest.mark.parametrize("execution_number", range(10))
+def test_gridworlds_seed(execution_number):
+    env_params = {
+        "override_infos": True,  # Zoo parallel_seed_test is unable to compare infos unless they have simple structure.
+        "seed": execution_number,  # for Gridworlds, the seed needs to be specified during environment construction since it affects map randomisation, while seed called later does not change map
+    }
+    env = lambda: safetygrid.SavannaGridworldParallelEnv(
+        env_params=env_params
+    )  # seed test requires lambda
+    try:
+        parallel_seed_test(env, num_cycles=10)
+    except TypeError:
+        # for some reason the test env in Git does not recognise the num_cycles neither as named or positional argument
+        parallel_seed_test(env)
 
 
 def test_gridworlds_agent_states():
@@ -92,62 +90,59 @@ def test_gridworlds_move_agent():
     pass  # safetygrid.SavannaGridworldEnv has no agent_states and move_agent()
 
 
-def test_gridworlds_step_result():
-    for test_index in range(0, 10):
-        env = safetygrid.SavannaGridworldParallelEnv(
-            env_params={
-                "num_iters": 2,
-                "seed": test_index,
-            }
-        )  # default is 1 iter which means that the env is done after 1 step below and the test will fail
-        num_agents = len(env.possible_agents)
-        assert num_agents, f"expected 1 agent, got: {num_agents}"
-        env.reset()
+@pytest.mark.parametrize("execution_number", range(10))
+def test_gridworlds_step_result(execution_number):
+    env = safetygrid.SavannaGridworldParallelEnv(
+        env_params={
+            "num_iters": 2,
+            "seed": execution_number,
+        }
+    )  # default is 1 iter which means that the env is done after 1 step below and the test will fail
+    num_agents = len(env.possible_agents)
+    assert num_agents, f"expected 1 agent, got: {num_agents}"
+    env.reset()
 
-        agent = env.possible_agents[0]
+    agent = env.possible_agents[0]
+    action = {agent: env.action_space(agent).sample()}
+
+    observations, rewards, terminateds, truncateds, infos = env.step(action)
+    dones = {
+        key: terminated or truncateds[key] for (key, terminated) in terminateds.items()
+    }
+
+    assert not dones[agent]
+    assert isinstance(observations, dict), "observations is not a dict"
+    assert isinstance(
+        observations[agent], np.ndarray
+    ), "observations of agent is not an array"
+    assert isinstance(rewards, dict), "rewards is not a dict"
+    assert isinstance(rewards[agent], np.float64), "reward of agent is not a float64"
+
+
+@pytest.mark.parametrize("execution_number", range(10))
+def test_gridworlds_done_step(execution_number):
+    env = safetygrid.SavannaGridworldParallelEnv(
+        env_params={
+            "amount_agents": 1,
+            "seed": execution_number,
+        }
+    )
+    assert len(env.possible_agents) == 1
+    env.reset()
+
+    agent = env.possible_agents[0]  # TODO: multi-agent iteration
+    for _ in range(env.metadata["num_iters"]):
         action = {agent: env.action_space(agent).sample()}
-
-        observations, rewards, terminateds, truncateds, infos = env.step(action)
+        _, _, terminateds, truncateds, _ = env.step(action)
         dones = {
             key: terminated or truncateds[key]
             for (key, terminated) in terminateds.items()
         }
 
-        assert not dones[agent]
-        assert isinstance(observations, dict), "observations is not a dict"
-        assert isinstance(
-            observations[agent], np.ndarray
-        ), "observations of agent is not an array"
-        assert isinstance(rewards, dict), "rewards is not a dict"
-        assert isinstance(
-            rewards[agent], np.float64
-        ), "reward of agent is not a float64"
-
-
-def test_gridworlds_done_step():
-    for test_index in range(0, 10):
-        env = safetygrid.SavannaGridworldParallelEnv(
-            env_params={
-                "amount_agents": 1,
-                "seed": test_index,
-            }
-        )
-        assert len(env.possible_agents) == 1
-        env.reset()
-
-        agent = env.possible_agents[0]  # TODO: multi-agent iteration
-        for _ in range(env.metadata["num_iters"]):
-            action = {agent: env.action_space(agent).sample()}
-            _, _, terminateds, truncateds, _ = env.step(action)
-            dones = {
-                key: terminated or truncateds[key]
-                for (key, terminated) in terminateds.items()
-            }
-
-        assert dones[agent]
-        with pytest.raises(ValueError):
-            action = {agent: env.action_space(agent).sample()}
-            env.step(action)
+    assert dones[agent]
+    with pytest.raises(ValueError):
+        action = {agent: env.action_space(agent).sample()}
+        env.step(action)
 
 
 def test_gridworlds_agents():
