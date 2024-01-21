@@ -5,20 +5,18 @@ from pathlib import Path
 from omegaconf import DictConfig
 from pettingzoo import AECEnv, ParallelEnv
 
-from aintelope.training.dqn_training import Trainer
 from aintelope.agents import get_agent_class
 from aintelope.environments import get_env_class
-import aintelope.agents.instinct_agent  # noqa: F401
-from aintelope.agents.instinct_agent import InstinctAgent  # noqa: F401
-from aintelope.agents.q_agent import QAgent  # noqa: F401
-from aintelope.environments.savanna_safetygrid import (  # noqa: F401
+from aintelope.environments.savanna_safetygrid import (
     SavannaGridworldParallelEnv,
     SavannaGridworldSequentialEnv,
 )
-from aintelope.environments.savanna_zoo import (  # noqa: F401
+from aintelope.environments.savanna_zoo import (
     SavannaZooParallelEnv,
     SavannaZooSequentialEnv,
 )
+from aintelope.environments.typing import Environment, PettingZooEnv
+from aintelope.training.dqn_training import Trainer
 
 
 def run_experiment(cfg: DictConfig) -> None:
