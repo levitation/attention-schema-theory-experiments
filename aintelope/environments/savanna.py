@@ -221,9 +221,8 @@ class SavannaEnv:
         And must set up the environment so that render(), step(), and observe()
         can be called without issues.
         """
-        if self.metadata["seed"] is not None and seed is None:
-            pass  # if seed was set during construction and is not provided as an argument to reset() then do not re-seed
-        else:
+        # if seed is not provided as an argument to reset() then do not re-seed. It is possible that seed was set during construction
+        if seed is not None:
             self.seed(seed)
 
         self.agents = list(

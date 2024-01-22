@@ -322,11 +322,9 @@ class GridworldZooBaseEnv:
         else:
             return self._last_infos[agent][INFO_OBSERVATION_COORDINATES]
 
-    # @functools.lru_cache(maxsize=None)
     # def observation_space(self, agent: str):
     #    return self._observation_spaces[agent]
 
-    # @functools.lru_cache(maxsize=None)
     # def action_space(self, agent: str):
     #    return self._action_spaces[agent]
 

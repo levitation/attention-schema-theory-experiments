@@ -28,15 +28,9 @@ class SavannaZooParallelEnv(SavannaEnv, ParallelEnv):
         SavannaEnv.__init__(self, env_params)
         ParallelEnv.__init__(self)
 
-    @functools.lru_cache(
-        maxsize=None
-    )  # TODO: I dont think caching is necessary here. Lets remove this line?
     def observation_space(self, agent: str):
         return self._observation_spaces[agent]
 
-    @functools.lru_cache(
-        maxsize=None
-    )  # TODO: I dont think caching is necessary here. Lets remove this line?
     def action_space(self, agent: str):
         return self._action_spaces[agent]
 
@@ -65,15 +59,9 @@ class SavannaZooSequentialEnv(SavannaEnv, AECEnv):
         SavannaEnv.__init__(self, env_params)
         AECEnv.__init__(self)
 
-    @functools.lru_cache(
-        maxsize=None
-    )  # TODO: I dont think caching is necessary here. Lets remove this line?
     def observation_space(self, agent: str):
         return self._observation_spaces[agent]
 
-    @functools.lru_cache(
-        maxsize=None
-    )  # TODO: I dont think caching is necessary here. Lets remove this line?
     def action_space(self, agent: str):
         return self._action_spaces[agent]
 
