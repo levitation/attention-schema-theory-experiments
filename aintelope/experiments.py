@@ -5,6 +5,7 @@ from omegaconf import DictConfig
 
 import os
 from pathlib import Path
+import glob
 
 from aintelope.training.dqn_training import Trainer
 
@@ -50,6 +51,8 @@ def run_experiment(cfg: DictConfig) -> None:
 
     # Common trainer for each agent's models
     trainer = Trainer(cfg)
+    dir_out = f"{cfg.log_dir}"
+    dir_cp = dir_out + "checkpoints/"
 
     # Agents
     agents = []
@@ -73,7 +76,14 @@ def run_experiment(cfg: DictConfig) -> None:
         agents[-1].reset(
             observation
         )  # TODO: is this reset necessary here? In main loop below, there is also a reset call
-        trainer.add_agent(agent_id, observation.shape, env.action_space)
+
+        # Get latest checkpoint if existing
+        checkpoint = False
+        checkpoints = glob.glob(dir_cp + agent_id + "*")
+        if len(checkpoints) > 0:
+            checkpoint = max(checkpoints, key=os.path.getctime)
+        # Add agent, with potential checkpoint
+        trainer.add_agent(agent_id, observation.shape, env.action_space, checkpoint)
         dones[agent_id] = False
 
     # Warmup not yet implemented
@@ -190,9 +200,7 @@ def run_experiment(cfg: DictConfig) -> None:
 
         # Save models
         # https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html
-        dir_out = f"{cfg.log_dir}"
         if i_episode % cfg.hparams.every_n_episodes == 0:
-            dir_cp = dir_out + "checkpoints/"
             os.makedirs(dir_cp, exist_ok=True)
             trainer.save_models(i_episode, dir_cp)
 
