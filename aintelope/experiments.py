@@ -231,7 +231,7 @@ def run_experiment(cfg: DictConfig) -> None:
             os.makedirs(dir_cp, exist_ok=True)
             trainer.save_models(i_episode, dir_cp)
 
-    record_path = f"{cfg.experiment_dir}" + f"{cfg.events_dir}"
+    record_path = Path(f"{cfg.experiment_dir}" + f"{cfg.events_dir}")
     rec.record_events(record_path, events)
 
 
