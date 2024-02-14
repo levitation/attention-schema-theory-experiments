@@ -1,11 +1,5 @@
 import pandas as pd
 from matplotlib import pyplot as plt
-import numpy as np
-from matplotlib import cm
-import matplotlib.collections as mcoll
-import matplotlib.path as mpath
-import dateutil.parser as dparser
-import seaborn as sns
 
 from typing import Optional
 
