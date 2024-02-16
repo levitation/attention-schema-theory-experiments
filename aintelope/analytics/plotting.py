@@ -1,7 +1,12 @@
-import pandas as pd
-from matplotlib import pyplot as plt
-
 from typing import Optional
+
+import dateutil.parser as dparser
+import matplotlib.collections as mcoll
+import matplotlib.path as mpath
+import numpy as np
+import pandas as pd
+from matplotlib import cm
+from matplotlib import pyplot as plt
 
 """
 Create and return plots for various analytics.

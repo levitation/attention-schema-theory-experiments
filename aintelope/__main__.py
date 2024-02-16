@@ -3,9 +3,9 @@ import logging
 import hydra
 from omegaconf import DictConfig, OmegaConf
 
+from aintelope.analytics import plotting, recording
 from aintelope.config.config_utils import register_resolvers
 from aintelope.experiments import run_experiment
-from aintelope.analytics import plotting, recording
 
 logger = logging.getLogger("aintelope.__main__")
 

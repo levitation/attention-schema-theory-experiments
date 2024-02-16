@@ -1,32 +1,38 @@
+import glob
 import logging
 import os
+from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-from aintelope.training.dqn_training import Trainer
-from aintelope.analytics import recording as rec
-
-import glob
-
 from omegaconf import DictConfig
-from pettingzoo import AECEnv, ParallelEnv
 
-from aintelope.training.dqn_training import Trainer
-from aintelope.agents import get_agent_class
+from aintelope.agents import (
+    Agent,
+    Environment,
+    PettingZooEnv,
+    get_agent_class,
+    register_agent_class,
+)
+
+# initialize agent registries
+from aintelope.agents.instinct_agent import InstinctAgent
+from aintelope.agents.q_agent import QAgent
+from aintelope.analytics import recording as rec
 from aintelope.environments import get_env_class
-import aintelope.agents.instinct_agent  # noqa: F401
-from aintelope.agents.instinct_agent import InstinctAgent  # noqa: F401
-from aintelope.agents.q_agent import QAgent  # noqa: F401
-from aintelope.environments.savanna_safetygrid import (  # noqa: F401
+from aintelope.environments.savanna_safetygrid import (
     SavannaGridworldParallelEnv,
     SavannaGridworldSequentialEnv,
 )
-from aintelope.environments.savanna_zoo import (  # noqa: F401
+from aintelope.environments.savanna_zoo import (
     SavannaZooParallelEnv,
     SavannaZooSequentialEnv,
 )
+from aintelope.training.dqn_training import Trainer
+
+# initialize environment registries
+from pettingzoo import AECEnv, ParallelEnv
 
 
 def run_experiment(cfg: DictConfig) -> None:
@@ -46,13 +52,18 @@ def run_experiment(cfg: DictConfig) -> None:
 
     # Common trainer for each agent's models
     trainer = Trainer(cfg)
+
     dir_out = f"{cfg.log_dir}"
     dir_cp = dir_out + "checkpoints/"
+
+    unit_test_mode = (
+        cfg.hparams.unit_test_mode
+    )  # is set during tests in order to speed up DQN computations
 
     # Agents
     agents = []
     dones = {}
-    for i in range(cfg.hparams.env_params.amount_agents):
+    for i in range(env.max_num_agents):
         agent_id = f"agent_{i}"
         agents.append(
             get_agent_class(cfg.hparams.agent_id)(
@@ -67,19 +78,27 @@ def run_experiment(cfg: DictConfig) -> None:
         # No need to call observe().
         if isinstance(env, ParallelEnv):
             observation = observations[agent_id]
+            info = infos[agent_id]
         elif isinstance(env, AECEnv):
             observation = env.observe(agent_id)
+            info = env.observe_info(agent_id)
 
         # TODO: is this reset necessary here? In main loop below,
         # there is also a reset call
-        agents[-1].reset(observation)
+        agents[-1].reset(observation, info)
         # Get latest checkpoint if existing
         checkpoint = None
         checkpoints = glob.glob(dir_cp + agent_id + "*")
         if len(checkpoints) > 0:
             checkpoint = max(checkpoints, key=os.path.getctime)
         # Add agent, with potential checkpoint
-        trainer.add_agent(agent_id, observation.shape, env.action_space, checkpoint)
+        trainer.add_agent(
+            agent_id,
+            (observation[0].shape, observation[1].shape),
+            env.action_space,
+            unit_test_mode=unit_test_mode,
+            checkpoint=checkpoint,
+        )
         dones[agent_id] = False
 
     # Warmup not yet implemented
@@ -100,7 +119,7 @@ def run_experiment(cfg: DictConfig) -> None:
             "Next_state",
         ]
         + ["Score"]
-    )  # TODO: replace this with env.score_titles
+    )  # TODO: replace this with env.score_titles    # TODO: multidimensional and multi-agent score handling
 
     for i_episode in range(cfg.hparams.num_episodes):
         # Reset
@@ -110,13 +129,13 @@ def run_experiment(cfg: DictConfig) -> None:
                 infos,
             ) = env.reset()
             for agent in agents:
-                agent.reset(observations[agent.id])
+                agent.reset(observations[agent.id], infos[agent.id])
                 dones[agent.id] = False
 
         elif isinstance(env, AECEnv):
             env.reset()
             for agent in agents:
-                agent.reset(env.observe(agent.id))
+                agent.reset(env.observe(agent.id), env.observe_info(agent_id))
                 dones[agent.id] = False
 
         # Iterations within the episode
@@ -126,10 +145,11 @@ def run_experiment(cfg: DictConfig) -> None:
                 actions = {}
                 for agent in agents:  # TODO: exclude terminated agents
                     observation = observations[agent.id]
-                    actions[agent.id] = agent.get_action(observation, step)
+                    info = infos[agent.id]
+                    actions[agent.id] = agent.get_action(observation, info, step)
 
                 # call: send actions and get observations
-                observations, scores, terminateds, truncateds, _ = env.step(actions)
+                observations, scores, terminateds, truncateds, infos = env.step(actions)
                 # call update since the list of terminateds will become smaller on
                 # second step after agents have died
                 dones.update(
@@ -142,6 +162,7 @@ def run_experiment(cfg: DictConfig) -> None:
                 # loop: update
                 for agent in agents:
                     observation = observations[agent.id]
+                    info = infos[agent.id]
                     score = scores[agent.id]
                     done = dones[agent.id]
                     terminated = terminateds[agent.id]
@@ -150,12 +171,16 @@ def run_experiment(cfg: DictConfig) -> None:
                     agent_step_info = agent.update(
                         env,
                         observation,
+                        info,
                         score,  # TODO: make a function to handle obs->rew in Q-agent too, remove this
+                        done,  # TODO: should it be "terminated" in place of "done" here?
                         done,  # TODO: should it be "terminated" in place of "done" here?
                     )
 
                     # Record what just happened
-                    env_step_info = [score]  # TODO package the score info into a list
+                    env_step_info = [
+                        score
+                    ]  # TODO package the score info into a list    # TODO: multidimensional and multi-agent score handling
                     events.loc[len(events)] = (
                         [cfg.experiment_name, i_episode, step]
                         + agent_step_info
@@ -177,7 +202,8 @@ def run_experiment(cfg: DictConfig) -> None:
                         action = None
                     else:
                         observation = env.observe(agent.id)
-                        action = agent.get_action(observation, step)
+                        info = env.observe_info(agent.id)
+                        action = agent.get_action(observation, info, step)
 
                     # Env step
                     # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope
@@ -209,13 +235,14 @@ def run_experiment(cfg: DictConfig) -> None:
                         agent_step_info = agent.update(
                             env,
                             observation,
+                            info,
                             score,
-                            done,  # TODO: "terminated" in place of "done" here?
+                            done,  # TODO: should it be "terminated" in place of "done" here?
                         )  # note that score is used ONLY by baseline
 
                         # Record what just happened
                         env_step_info = [
-                            score
+                            score  # TODO: multidimensional and multi-agent score handling
                         ]  # TODO package the score info into a list
                         events.loc[len(events)] = (
                             [cfg.experiment_name, i_episode, step]
