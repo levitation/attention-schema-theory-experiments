@@ -37,7 +37,7 @@ For development and testing follow (active environment):
 
 To automatically sort the imports you can run
 [`isort aintelope tests`](https://github.com/PyCQA/isort) from the root level of the project.
-To autoformat python files you can use [`black .`](https://github.com/psf/black).
+To autoformat python files you can use [`black .`](https://github.com/psf/black) from the root level of the project.
 Configurations of the formatters can be found in `pyproject.toml`.
 For linting/code style use [`flake8`](https://flake8.pycqa.org/en/latest/).
 
