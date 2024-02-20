@@ -2,7 +2,6 @@ import functools
 import logging
 from typing import Dict, Optional
 
-from aintelope.environments import register_env_class
 from aintelope.environments.savanna import (
     Action,
     HumanRenderState,

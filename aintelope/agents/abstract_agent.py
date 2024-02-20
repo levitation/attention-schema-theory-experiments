@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
+import numpy.typing as npt
+from aintelope.typing import ObservationFloat
+from pettingzoo import AECEnv, ParallelEnv
 
-import pandas as pd
-
+Environment = Union[AECEnv, ParallelEnv]
 
 class Agent(ABC):
     @abstractmethod
@@ -14,5 +16,12 @@ class Agent(ABC):
         ...
 
     @abstractmethod
-    def get_history() -> pd.DataFrame:
+    def update(
+        self,
+        env: Environment,
+        observation: npt.NDArray[ObservationFloat],
+        score: float,
+        done: bool,
+        save_path: Optional[str],
+    ) -> list:
         ...

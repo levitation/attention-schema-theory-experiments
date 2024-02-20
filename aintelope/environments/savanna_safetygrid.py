@@ -29,7 +29,6 @@ from ai_safety_gridworlds.helpers.gridworld_zoo_parallel_env import (
     GridworldZooParallelEnv,
 )
 
-from aintelope.environments import register_env_class
 from aintelope.environments.env_utils.distance import distance_to_closest_item
 from aintelope.typing import Reward  # TODO: use np.ndarray or mo_reward
 from aintelope.typing import (  # PositionFloat,; Action,; AgentStates,
