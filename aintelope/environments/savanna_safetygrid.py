@@ -117,7 +117,12 @@ class GridworldZooBaseEnv:
         # NB! Need to clone in order to not modify the default dict.
         # Similar problem to mutable default arguments.
         self.metadata = dict(self.metadata)
+        scores = env_params.pop("scores", None)
         self.metadata.update(env_params)
+        if scores is not None:  # tests do not have scores config
+            self.metadata.update(
+                scores
+            )  # move scores to same metadata level with other parameters
         logger.info(f"initializing savanna env with params: {self.metadata}")
 
         metadata_to_super_initargs_dict = {
@@ -690,7 +695,9 @@ class SavannaGridworldParallelEnv(GridworldZooBaseEnv, GridworldZooParallelEnv):
                     del self.observations2[agent]
         else:
             rewards2 = {}
-            for agent in list(self.observations2.keys()):
+            for agent in list(
+                infos.keys()
+            ):  # previously terminated or truncated agents are not in infos or observations
                 rewards2[agent] = infos[agent][INFO_REWARD_DICT]
 
         if self._override_infos:
@@ -908,11 +915,11 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
             for agent2 in self.agents:
                 self._cumulative_rewards2[agent2] += self._last_rewards2[agent2]
         else:
-            self._last_rewards2[agent] = info[INFO_REWARD_DICT][agent]
+            self._last_rewards2[agent] = info[INFO_REWARD_DICT]
 
             # NB! cumulative reward should be calculated for all agents
             for agent2 in self.agents:
-                self._cumulative_rewards2[agent2] += info[INFO_REWARD_DICT][agent2]
+                self._cumulative_rewards2[agent2] = info[INFO_CUMULATIVE_REWARD_DICT]
 
     def step_single_agent(self, action: Action):
         """step(action) takes in an action for each agent and should return the
@@ -969,11 +976,12 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
             for agent2 in self.agents:
                 self._cumulative_rewards2[agent2] += self._last_rewards2[agent2]
         else:
-            self._last_rewards2[agent] = info[INFO_REWARD_DICT][agent]
+            reward2 = info[INFO_REWARD_DICT]
+            self._last_rewards2[agent] = reward2
 
             # NB! cumulative reward should be calculated for all agents
             for agent2 in self.agents:
-                self._cumulative_rewards2[agent2] += info[INFO_REWARD_DICT][agent2]
+                self._cumulative_rewards2[agent2] = info[INFO_CUMULATIVE_REWARD_DICT]
 
         terminated = self.terminations[agent]
         truncated = self.truncations[agent]
@@ -1065,9 +1073,9 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
                         # needs to be updated here as well.
                         self._cumulative_rewards2[agent] += reward2
                     else:
-                        self._last_rewards2[agent] = info[INFO_REWARD_DICT][agent]
-                        self._cumulative_rewards2[agent] += info[INFO_REWARD_DICT][
-                            agent
+                        self._last_rewards2[agent] = info[INFO_REWARD_DICT]
+                        self._cumulative_rewards2[agent] = info[
+                            INFO_CUMULATIVE_REWARD_DICT
                         ]
                 else:
                     info = GridworldZooAecEnv.observe_info(self, agent)
@@ -1083,9 +1091,9 @@ class SavannaGridworldSequentialEnv(GridworldZooBaseEnv, GridworldZooAecEnv):
                         # needs to be updated here as well.
                         self._cumulative_rewards2[agent] += reward2
                     else:
-                        self._last_rewards2[agent] = info[INFO_REWARD_DICT][agent]
-                        self._cumulative_rewards2[agent] += info[INFO_REWARD_DICT][
-                            agent
+                        self._last_rewards2[agent] = info[INFO_REWARD_DICT]
+                        self._cumulative_rewards2[agent] = info[
+                            INFO_CUMULATIVE_REWARD_DICT
                         ]
 
         # / for index in range(0, self.num_agents)
