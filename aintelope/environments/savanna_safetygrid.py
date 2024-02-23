@@ -117,7 +117,11 @@ class GridworldZooBaseEnv:
         # NB! Need to clone in order to not modify the default dict.
         # Similar problem to mutable default arguments.
         self.metadata = dict(self.metadata)
+        scores = env_params.pop("scores", None)
         self.metadata.update(env_params)
+        self.metadata.update(
+            scores
+        )  # move scores to same metadata level with other parameters
         logger.info(f"initializing savanna env with params: {self.metadata}")
 
         metadata_to_super_initargs_dict = {
