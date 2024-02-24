@@ -23,6 +23,7 @@ hparams:
   model: dqn
   unit_test_mode: False      # is set during tests in order to speed up DQN computations
   agent_id: q_agent
+  traintest_mode: train
   train_episodes: 10 
   test_episodes: 3
   warm_start_steps: 100

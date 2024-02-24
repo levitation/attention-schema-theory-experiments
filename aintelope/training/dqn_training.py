@@ -150,7 +150,7 @@ class Trainer:
         Returns:
             None
         """
-        if step > 0:
+        if step > 0 and self.hparams.traintest_mode == "train":
             epsilon = max(
                 self.hparams.model_params.eps_end,
                 self.hparams.model_params.eps_start
@@ -255,10 +255,15 @@ class Trainer:
             None
         """
         for agent_id in self.policy_nets.keys():
-            if len(self.replay_memories[agent_id]) < self.hparams.model_params.batch_size:
+            if (
+                len(self.replay_memories[agent_id])
+                < self.hparams.model_params.batch_size
+            ):
                 return
 
-            transitions = self.replay_memories[agent_id].sample(self.hparams.model_params.batch_size)
+            transitions = self.replay_memories[agent_id].sample(
+                self.hparams.model_params.batch_size
+            )
             batch = Transition(*zip(*transitions))
 
             non_final_mask = torch.tensor(
@@ -281,7 +286,9 @@ class Trainer:
             target_net = self.target_nets[agent_id]
             state_action_values = policy_net(state_batch).gather(1, action_batch.long())
 
-            next_state_values = torch.zeros(self.hparams.model_params.batch_size, device=self.device)
+            next_state_values = torch.zeros(
+                self.hparams.model_params.batch_size, device=self.device
+            )
             with torch.no_grad():
                 next_state_values[non_final_mask] = target_net(
                     non_final_next_states
