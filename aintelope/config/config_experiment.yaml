@@ -25,22 +25,22 @@ hparams:
   agent_id: q_agent
   num_episodes: 5   # TEMP for tests only atm
   traintest_mode: train
-  train_episodes: 10
+  train_episodes: 80
   test_episodes: 3
   warm_start_steps: 100
   save_frequency: 1000 # how often save a model TEMP offline
   agent_params:
     target_instincts: []
   model_params:
-    hidden_sizes: [8,8]
+    hidden_sizes: [4,4]
     batch_size: 16
-    lr: 0.001
+    lr: 0.0015
     gamma: 0.99
     tau: 0.05
-    eps_last_frame: 80
+    eps_last_frame: 200
     eps_start: 1.0
     eps_end: 0.01
-    replay_size: 99
+    replay_size: 50 #99
   env_params:
     env_experiment: aintelope.aintelope_savanna
     level: 0
