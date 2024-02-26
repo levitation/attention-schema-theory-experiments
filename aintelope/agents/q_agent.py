@@ -80,7 +80,7 @@ class QAgent(Agent):
         info: dict = {},
         score: float = 0.0,
         done: bool = False,
-        save_path: Optional[str] = None,    # TODO: this is unused right now
+        save_path: Optional[str] = None,  # TODO: this is unused right now
     ) -> list:
         """
         Takes observations and updates trainer on perceived experiences.

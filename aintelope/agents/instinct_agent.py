@@ -65,7 +65,7 @@ class InstinctAgent(QAgent):
         info: dict = {},
         score: float = 0.0,
         done: bool = False,
-        save_path: Optional[str] = None,    # TODO: this is unused right now
+        save_path: Optional[str] = None,  # TODO: this is unused right now
     ) -> list:
         """
         Takes observations and updates trainer on perceived experiences.
@@ -104,7 +104,7 @@ class InstinctAgent(QAgent):
                         instinct_reward,
                         instinct_event,
                     ) = instinct_object.calc_reward(self, next_state, next_info)
-                    reward += instinct_reward   # TODO: nonlinear aggregation
+                    reward += instinct_reward  # TODO: nonlinear aggregation
                     logger.debug(
                         f"Reward of {instinct_name}: {instinct_reward}; "
                         f"total reward: {reward}"
