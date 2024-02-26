@@ -40,7 +40,6 @@ def load_checkpoint(path, obs_size, action_space_size, unit_test_mode, hidden_si
         unit_test_mode=unit_test_mode,
         hidden_sizes=hidden_sizes,
     )
-    # optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
     if not unit_test_mode:
         checkpoint = torch.load(path)
@@ -72,6 +71,8 @@ class Trainer:
 
         self.hparams = params.hparams
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        print("Using GPU: " + str(self.device not in ["cpu"]))
 
     def add_agent(
         self,
@@ -180,7 +181,6 @@ class Trainer:
             )
 
             if str(self.device) not in ["cpu"]:
-                print(self.device not in ["cpu"])
                 observation = (
                     observation[0].cuda(self.device),
                     observation[1].cuda(self.device),
