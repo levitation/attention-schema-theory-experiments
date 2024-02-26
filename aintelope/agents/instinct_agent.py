@@ -123,7 +123,7 @@ class InstinctAgent(QAgent):
             )
         )
 
-        event = [self.id, self.state, self.last_action, score, done, next_state]
+        event = [self.id, self.state, self.last_action, reward, done, next_state]
         self.trainer.update_memory(*event)
         self.state = next_state
         self.info = info

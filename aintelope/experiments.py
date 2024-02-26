@@ -158,7 +158,6 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                         if isinstance(score, dict)
                         else score,  # TODO: make a function to handle obs->rew in Q-agent too, remove this
                         done,  # TODO: should it be "terminated" in place of "done" here?
-                        done,  # TODO: should it be "terminated" in place of "done" here?
                     )
 
                     # Record what just happened
