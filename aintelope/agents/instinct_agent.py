@@ -65,7 +65,7 @@ class InstinctAgent(QAgent):
         info: dict = {},
         score: float = 0.0,
         done: bool = False,
-        save_path: Optional[str] = None,
+        save_path: Optional[str] = None,    # TODO: this is unused right now
     ) -> list:
         """
         Takes observations and updates trainer on perceived experiences.
@@ -73,12 +73,17 @@ class InstinctAgent(QAgent):
 
         Args:
             env: Environment
-            observation: ObservationArray
+            observation: Tuple[ObservationArray, ObservationArray]
             score: Only baseline uses score as a reward
             done: boolean whether run is done
             save_path: str
         Returns:
-            Reward: float
+            agent_id (str): same as elsewhere ("agent_0" among them)
+            state (Tuple[npt.NDArray[ObservationFloat], npt.NDArray[ObservationFloat]]): input for the net
+            action (int): index of action
+            reward (float): reward signal
+            done (bool): if agent is done
+            next_state (npt.NDArray[ObservationFloat]): input for the net
         """
         next_state = observation
         next_info = info
@@ -99,7 +104,7 @@ class InstinctAgent(QAgent):
                         instinct_reward,
                         instinct_event,
                     ) = instinct_object.calc_reward(self, next_state, next_info)
-                    reward += instinct_reward
+                    reward += instinct_reward   # TODO: nonlinear aggregation
                     logger.debug(
                         f"Reward of {instinct_name}: {instinct_reward}; "
                         f"total reward: {reward}"

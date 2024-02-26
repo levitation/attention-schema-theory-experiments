@@ -4,8 +4,7 @@ from typing import List, NamedTuple, Optional, Tuple
 import numpy.typing as npt
 
 from aintelope.agents import Agent
-from aintelope.aintelope_typing import ObservationFloat
-from aintelope.environments.savanna_gym import SavannaGymEnv
+from aintelope.aintelope_typing import ObservationFloat, PettingZooEnv
 from aintelope.training.dqn_training import Trainer
 
 logger = logging.getLogger("aintelope.agents.q_agent")
@@ -51,8 +50,8 @@ class QAgent(Agent):
         info: dict = {},
         step: int = 0,  # net: nn.Module, epsilon: float, device: str
     ) -> Optional[int]:
-        """Given an observation, ask your net what to do. State is needed to be given
-        here as other agents have changed the state!
+        """Given an observation, ask your net what to do. State is needed to be
+        given here as other agents have changed the state!
 
         Args:
             net: pytorch Module instance, the model
@@ -74,14 +73,14 @@ class QAgent(Agent):
     # TODO hack, figure out if state_to_namedtuple can be static somewhere
     def update(
         self,
-        env: SavannaGymEnv = None,
+        env: PettingZooEnv = None,
         observation: Tuple[
             npt.NDArray[ObservationFloat], npt.NDArray[ObservationFloat]
         ] = None,
         info: dict = {},
         score: float = 0.0,
         done: bool = False,
-        save_path: Optional[str] = None,
+        save_path: Optional[str] = None,    # TODO: this is unused right now
     ) -> list:
         """
         Takes observations and updates trainer on perceived experiences.
