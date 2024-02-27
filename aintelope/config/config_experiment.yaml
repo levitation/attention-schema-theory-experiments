@@ -27,7 +27,7 @@ hparams:
   traintest_mode: train
   train_episodes: 10 
   test_episodes: 3
-  # warm_start_steps: 100       # not used at the moment
+  warm_start_steps: 5       # not used at the moment, except for the unit tests
   save_frequency: 1 # how often save a model
   agent_params:
     target_instincts: []
