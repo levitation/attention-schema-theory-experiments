@@ -9,6 +9,7 @@ from omegaconf import DictConfig
 from aintelope.agents import get_agent_class
 from aintelope.analytics import recording as rec
 from aintelope.environments import get_env_class
+from aintelope.environments.savanna_safetygrid import GridworldZooBaseEnv
 from aintelope.training.dqn_training import Trainer
 
 from pettingzoo import AECEnv, ParallelEnv
@@ -99,7 +100,7 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
             "Done",
             "Next_state",
         ]
-        + score_dimensions
+        + (score_dimensions if isinstance(env, GridworldZooBaseEnv) else ["Score"])
     )
 
     num_episodes = cfg.hparams.train_episodes
@@ -122,7 +123,7 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
         elif isinstance(env, AECEnv):
             env.reset()
             for agent in agents:
-                agent.reset(env.observe(agent.id), env.observe_info(agent_id))
+                agent.reset(env.observe(agent.id), env.observe_info(agent.id))
                 dones[agent.id] = False
 
         # Iterations within the episode
@@ -136,7 +137,9 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                 for agent in agents:  # TODO: exclude terminated agents
                     observation = observations[agent.id]
                     info = infos[agent.id]
-                    actions[agent.id] = agent.get_action(observation, info, step)
+                    actions[agent.id] = agent.get_action(
+                        observation, info, step, i_episode
+                    )
 
                 # call: send actions and get observations
                 observations, scores, terminateds, truncateds, infos = env.step(actions)
@@ -169,9 +172,12 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                     )
 
                     # Record what just happened
-                    env_step_info = [
-                        score.get(dimension, 0) for dimension in score_dimensions
-                    ]
+                    env_step_info = (
+                        [score.get(dimension, 0) for dimension in score_dimensions]
+                        if isinstance(score, dict)
+                        else [score]
+                    )
+
                     events.loc[len(events)] = (
                         [cfg.experiment_name, i_episode, step]
                         + agent_step_info
@@ -194,7 +200,7 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                     else:
                         observation = env.observe(agent.id)
                         info = env.observe_info(agent.id)
-                        action = agent.get_action(observation, info, step)
+                        action = agent.get_action(observation, info, step, i_episode)
 
                     # Env step
                     # NB! both AIntelope Zoo and Gridworlds Zoo wrapper in AIntelope
@@ -232,9 +238,12 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                         )  # note that score is used ONLY by baseline
 
                         # Record what just happened
-                        env_step_info = [
-                            score.get(dimension, 0) for dimension in score_dimensions
-                        ]
+                        env_step_info = (
+                            [score.get(dimension, 0) for dimension in score_dimensions]
+                            if isinstance(score, dict)
+                            else [score]
+                        )
+
                         events.loc[len(events)] = (
                             [cfg.experiment_name, i_episode, step]
                             + agent_step_info
@@ -242,9 +251,10 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
                         )
 
                         # NB! any agent could die at any other agent's step
-                        for agent_id in env.agents:
-                            dones[agent_id] = (
-                                env.terminations[agent_id] or env.truncations[agent.id]
+                        for agent_id2 in env.agents:
+                            dones[agent_id2] = (
+                                env.terminations[agent_id2]
+                                or env.truncations[agent_id2]
                             )
                             # TODO: if the agent died during some other agents step,
                             # should we call agent.update() on the dead agent,
