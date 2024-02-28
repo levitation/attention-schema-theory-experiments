@@ -99,7 +99,7 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
             "Done",
             "Next_state",
         ]
-        + score_dimensions
+        + (score_dimensions if not isinstance(env, SavannaEnv) else ["Score"])
     )
 
     num_episodes = cfg.hparams.train_episodes
