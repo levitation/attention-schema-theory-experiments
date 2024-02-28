@@ -109,6 +109,8 @@ def run_experiment(cfg: DictConfig) -> None:
         num_episodes = cfg.hparams.test_episodes
 
     for i_episode in range(num_episodes):
+        print(f"episode: {i_episode}")
+
         # Reset
         if isinstance(env, ParallelEnv):
             (
@@ -127,6 +129,9 @@ def run_experiment(cfg: DictConfig) -> None:
 
         # Iterations within the episode
         for step in range(cfg.hparams.env_params.num_iters):
+            if step > 0 and step % 100 == 0:
+                print(f"step: {step}")
+
             if isinstance(env, ParallelEnv):
                 # loop: get observations and collect actions
                 actions = {}
@@ -162,7 +167,6 @@ def run_experiment(cfg: DictConfig) -> None:
                         sum(score.values())
                         if isinstance(score, dict)
                         else score,  # TODO: make a function to handle obs->rew in Q-agent too, remove this
-                        done,  # TODO: should it be "terminated" in place of "done" here?
                         done,  # TODO: should it be "terminated" in place of "done" here?
                     )
                     
@@ -279,7 +283,7 @@ def run_experiment(cfg: DictConfig) -> None:
 
     # normalise slashes in paths. This is not mandatory, but will be cleaner to debug
     experiment_dir = os.path.normpath(cfg.experiment_dir)
-    events_fname = os.path.normpath(cfg.events_fname)
+    events_fname = cfg.events_fname
 
     record_path = Path(os.path.join(experiment_dir, events_fname))
     os.makedirs(experiment_dir, exist_ok=True)

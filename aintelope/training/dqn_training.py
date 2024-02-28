@@ -72,6 +72,8 @@ class Trainer:
         self.hparams = params.hparams
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+        print("Using GPU: " + str(self.device not in ["cpu"]))
+
     def add_agent(
         self,
         agent_id,
@@ -150,14 +152,19 @@ class Trainer:
         Returns:
             None
         """
-        if step > 0 and self.hparams.traintest_mode == "train":
-            epsilon = max(
-                self.hparams.model_params.eps_end,
-                self.hparams.model_params.eps_start
-                - step * 1 / self.hparams.model_params.eps_last_frame,
-            )
-        else:
-            epsilon = 0.0
+        # if step > 0:
+        #    epsilon = max(
+        #        self.hparams.model_params.eps_end,
+        #        self.hparams.model_params.eps_start
+        #        - step * 1 / self.hparams.model_params.eps_last_frame,
+        #    )
+        # else:
+        #    epsilon = 0.0
+        epsilon = self.hparams.model_params.eps_start + (
+            self.hparams.model_params.eps_end - self.hparams.model_params.eps_start
+        ) * min(1, step / self.hparams.model_params.eps_last_frame)
+
+        # print(f"Epsilon: {epsilon}")
 
         if np.random.random() < epsilon:
             action = self.action_spaces[agent_id].sample()
@@ -179,7 +186,6 @@ class Trainer:
             )
 
             if str(self.device) not in ["cpu"]:
-                print(self.device not in ["cpu"])
                 observation = (
                     observation[0].cuda(self.device),
                     observation[1].cuda(self.device),
@@ -214,7 +220,7 @@ class Trainer:
         Returns:
             None
         """
-        # add experience to torch device if bugged
+        # add experience to torch device if bugged    # TODO: what does bugging mean here?
         if done:
             return
 

@@ -29,6 +29,8 @@ hparams:
   test_episodes: 3
   #warm_start_steps: 100
   save_frequency: 1000 # how often save a model TEMP offline
+  warm_start_steps: 5       # not used at the moment, except for the unit tests
+  save_frequency: 1 # how often save a model
   agent_params:
     target_instincts: []
   model_params:
@@ -36,6 +38,8 @@ hparams:
     batch_size: 16 # 16 ws better than 32? a bit.
     lr: 0.015 # 0.015 was better than 0.005
     gamma: 0.99
+    tau: 0.05
+    eps_last_frame: 800
     tau: 0.05 # was 0.05
     eps_last_frame: 195
     eps_start: 1.0
@@ -45,10 +49,12 @@ hparams:
     env_experiment: aintelope.aintelope_savanna
     level: 0
     map_max: 5     # used for old AIntelope environment
-    map_width: ${hparams.env_params.map_max}   # NB! here it is exclusive max, used for Gridworld environments
-    map_height: ${hparams.env_params.map_max}   # NB! here it is exclusive max, used for Gridworld environments
+    map_width: ${hparams.env_params.map_max}   # NB! here it is exclusive max, used for Gridworld environments. Also, this width includes the walls at the border of the game, so 2 units of walls. Therefore, interior is map_width - 2.
+    map_height: ${hparams.env_params.map_max}   # NB! here it is exclusive max, used for Gridworld environments. Also, this width includes the walls at the border of the game, so 2 units of walls. Therefore, interior is map_height - 2.
     #
     # to make whole map visible while still agent-centric, set the value to 
+    # "max(map_width, map_height) - 3" in case of using Gridworld environments. This is because the map width and height includes walls. The agent always sees its own tile, so the actual radius will be one bigger. Therefore in total 3 units can be substracted.
+    render_agent_radius: 10     
     # "max(map_width, map_height) - 3" in case of using Gridworld environments
     render_agent_radius: 3     
     #
@@ -56,13 +62,14 @@ hparams:
     # (a trial is a sequence of training episodes separated by env.reset call,
     # but using a same model instance), 3 - once per training episode.
     map_randomization_frequency: 1 
-    num_iters: 20 
+    num_iters: 1000 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
     render_mode: null
     # render_map_max: 5     # this field is currently not used anywhere in code
     #
     amount_agents: 1  
     amount_grass_patches: 1
     amount_water_holes: 0
+    amount_danger_tiles: 0
     amount_danger_tiles: 0
     amount_predators: 0
     enable_homeostasis: False

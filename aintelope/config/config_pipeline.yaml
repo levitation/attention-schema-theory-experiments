@@ -1,7 +1,7 @@
 test1:  # food_unbounded
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1 
     amount_grass_patches: 2
     #
@@ -15,7 +15,7 @@ test1:  # food_unbounded
 test2:  # danger_tiles
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1 
     amount_grass_patches: 2
     amount_danger_tiles: 5
@@ -31,10 +31,10 @@ test2:  # danger_tiles
 test3:   # predators
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1 
     amount_grass_patches: 2
-    amount_predators: 5
+    amount_predators: 1     # TODO: increase this later
     #
     scores:
         PREDATOR_NPC_SCORE: '{"INJURY": -100}'
@@ -47,7 +47,7 @@ test3:   # predators
 test4:   # food_homeostasis
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1
     amount_grass_patches: 2
     enable_homeostasis: True
@@ -67,7 +67,7 @@ test4:   # food_homeostasis
 test5:   # food_sustainability
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1
     amount_grass_patches: 2
     sustainability_challenge: True
@@ -89,7 +89,7 @@ test5:   # food_sustainability
 test6:   # food_drink_homeostasis
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1
     amount_grass_patches: 2
     amount_water_holes: 2
@@ -119,7 +119,7 @@ test6:   # food_drink_homeostasis
 test7:   # food_drink_homeostasis_gold
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 1
     amount_grass_patches: 2
     amount_water_holes: 2
@@ -151,7 +151,7 @@ test7:   # food_drink_homeostasis_gold
 test8:   # food_sharing
   env_params:
     env_experiment: "aintelope.aintelope_savanna"
-    num_iters: 200 # duration of a single episode. NB! warm_start_steps will be subtracted from this value
+    # num_iters: 100 # TODO: if you override this here then you need to override also eps_last_frame! duration of a single episode. NB! warm_start_steps will be subtracted from this value
     amount_agents: 2            # NB! two agents
     amount_grass_patches: 1     # NB! only one grass patch, so the two agents need to share it. No need for hallway, the map is random as in other experiments. This provides consistency of experiments and simplicity of configuration
     enable_homeostasis: True
@@ -170,6 +170,18 @@ test8:   # food_sharing
     FOOD_OVERSATIATION_LIMIT: 2
    
 
+
+
+
+
+
+
+
+
+
+
+
+
 # debug environments follow below    
 
 #test9:      # 3x3 map       # agent is up left, food is bottom right
@@ -179,7 +191,8 @@ test8:   # food_sharing
 #    map_height: null        # use default
 #    render_agent_radius: 2
 #    map_randomization_frequency: 0  # off
-#    action_direction_mode: 0    # fixed
+#    observation_direction_mode: 0  # off
+#    action_direction_mode: 0
 #    amount_agents: 1 
 #    amount_grass_patches: 1
 #    scores:
@@ -192,6 +205,7 @@ test8:   # food_sharing
 #    map_height: null        # use default   
 #    render_agent_radius: 1
 #    map_randomization_frequency: 0  # off
+#    observation_direction_mode: 0  # off
 #    action_direction_mode: 0    # fixed
 #    amount_agents: 1 
 #    amount_grass_patches: 0
@@ -205,6 +219,7 @@ test8:   # food_sharing
 #    map_height: null        # use default
 #    render_agent_radius: 1
 #    map_randomization_frequency: 0  # off
+#    observation_direction_mode: 0  # off
 #    action_direction_mode: 0    # fixed
 #    amount_agents: 1 
 #    amount_grass_patches: 1
@@ -218,6 +233,7 @@ test8:   # food_sharing
 #    map_height: null        # use default   
 #    render_agent_radius: 7
 #    map_randomization_frequency: 0  # off
+#    observation_direction_mode: 0  # off
 #    action_direction_mode: 0    # fixed
 #    amount_agents: 1 
 #    amount_grass_patches: 1
