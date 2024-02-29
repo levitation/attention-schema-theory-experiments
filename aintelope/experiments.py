@@ -115,13 +115,13 @@ def run_experiment(cfg: DictConfig, score_dimensions: list) -> None:
             (
                 observations,
                 infos,
-            ) = env.reset()
+            ) = env.reset(trial_no=int(i_episode / cfg.hparams.trial_length))
             for agent in agents:
                 agent.reset(observations[agent.id], infos[agent.id])
                 dones[agent.id] = False
 
         elif isinstance(env, AECEnv):
-            env.reset()
+            env.reset(trial_no=int(i_episode / cfg.hparams.trial_length))
             for agent in agents:
                 agent.reset(env.observe(agent.id), env.observe_info(agent.id))
                 dones[agent.id] = False
