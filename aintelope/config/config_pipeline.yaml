@@ -185,6 +185,8 @@ test8:   # food_sharing
 # debug environments follow below    
 
 #test9:      # 3x3 inner map       # agent is up left, food is bottom right
+#  model_params:
+#    num_conv_layers: 1
 #  env_params:
 #    level: 1
 #    map_width: null        # use default
@@ -199,6 +201,8 @@ test8:   # food_sharing
 #        FOOD_SCORE: '{"FOOD": 1}'
    
 #test13:      # 4x4 inner map       # agent is up left, food is bottom right
+#  model_params:
+#    num_conv_layers: 1
 #  env_params:
 #    level: 5
 #    map_width: null        # use default
@@ -213,6 +217,8 @@ test8:   # food_sharing
 #        FOOD_SCORE: '{"FOOD": 1}'
    
 #test14:      # 5x5 inner map       # agent is up left, food is bottom right
+#  model_params:
+#    num_conv_layers: 1
 #  env_params:
 #    level: 6
 #    map_width: null        # use default
@@ -241,6 +247,8 @@ test8:   # food_sharing
 #        FOOD_SCORE: '{"FOOD": 1}'
    
 #test16:      # 7x7 inner map       # agent is up left, food is bottom right
+#  model_params:
+#    num_conv_layers: 1
 #  env_params:
 #    level: 8
 #    map_width: null        # use default

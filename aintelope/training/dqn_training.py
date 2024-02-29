@@ -21,7 +21,7 @@ Transition = namedtuple(
 
 
 def load_checkpoint(
-    path, obs_size, action_space_size, unit_test_mode, hidden_sizes, num_conv_layers
+    path, obs_size, action_space_size, unit_test_mode, hidden_sizes, num_conv_layers, conv_size
 ):
     """
     https://pytorch.org/tutorials/recipes/recipes/saving_and_loading_a_general_checkpoint.html
@@ -42,6 +42,7 @@ def load_checkpoint(
         unit_test_mode=unit_test_mode,
         hidden_sizes=hidden_sizes,
         num_conv_layers=num_conv_layers,
+        conv_size=conv_size,
     )
 
     if not unit_test_mode:
@@ -115,6 +116,7 @@ class Trainer:
                 unit_test_mode=unit_test_mode,
                 hidden_sizes=self.hparams.model_params.hidden_sizes,
                 num_conv_layers=self.hparams.model_params.num_conv_layers,
+                conv_size=self.hparams.model_params.conv_size,
             ).to(self.device)
         else:
             self.policy_nets[agent_id] = load_checkpoint(
@@ -124,6 +126,7 @@ class Trainer:
                 unit_test_mode=unit_test_mode,
                 hidden_sizes=self.hparams.model_params.hidden_sizes,
                 num_conv_layers=self.hparams.model_params.num_conv_layers,
+                conv_size=self.hparams.model_params.conv_size,
             ).to(self.device)
 
         self.target_nets[agent_id] = DQN(
@@ -132,6 +135,7 @@ class Trainer:
             unit_test_mode=unit_test_mode,
             hidden_sizes=self.hparams.model_params.hidden_sizes,
             num_conv_layers=self.hparams.model_params.num_conv_layers,
+            conv_size=self.hparams.model_params.conv_size,
         ).to(self.device)
         self.target_nets[agent_id].load_state_dict(
             self.policy_nets[agent_id].state_dict()
@@ -152,6 +156,7 @@ class Trainer:
         info: dict = {},
         step: int = 0,
         episode: int = 0,
+        action_biases: list = None,
     ) -> Optional[int]:
         """
         Get action from an agent
