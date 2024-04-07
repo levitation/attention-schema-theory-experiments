@@ -35,7 +35,8 @@ def try_df_to_csv_write(df, filepath, **kwargs):
     ):  # TODO: refactor this loop to a shared helper function. recording.py uses a same pattern
         try:
             with FileLock(
-                filepath + ".lock"
+                str(filepath)
+                + ".lock"  # filepath may be PosixPath, so need to convert to str
             ):  # NB! take the lock inside the loop, not outside, so that when we are waiting for user confirmation for retry, we do not block other processes during that wait
                 df.to_csv(filepath, **kwargs)
             return
