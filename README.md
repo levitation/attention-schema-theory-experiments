@@ -93,25 +93,11 @@ of loggers can be provided. See the
 [documentation](https://hydra.cc/docs/tutorials/basic/running_your_app/logging/)
 for more details.
 
-# Cygwin
+# Windows
 
-If you are a Windows user, note that this project does work fine on linux ubuntu
-using Windows wsl2. If you would prefer not to use wsl2, and instead run this
-directly on Windows, you will need to figure out how to do that. We have not
-managed to get aintelope to build under Windows/Cygwin!
-
-You need at least the following prerequisites:
-
-- Python: Cygwin modules Python 3.7 including python3-devel (but no 3.9+
-  available)
-- Pytorch: https://github.com/KoichiYasuoka/CygTorch
-
-## Known Issues
-
-- Even with CygTorch pytorch-lightning can't find a Torch version.
+Aintelope code base is compatible with Windows. No extra steps needed. GPU computation works fine as well. WSL is not needed.
 
 # Differences to regular RL
-
 
 For alignment and cognitive research, the internal reward of the agent and 
 the actual score from the desired behaviour are measured separately. 
