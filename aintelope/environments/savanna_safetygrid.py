@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 import gymnasium.spaces  # cannot import gymnasium.spaces.Tuple directly since it is already used by typing
-from ai_safety_gridworlds.environments.aintelope.aintelope_savanna import (  # TODO: import agent char map from env object instead?; AGENT_CHR3,
+from aintelope.environments.ai_safety_gridworlds.aintelope_savanna import (  # TODO: import agent char map from env object instead?; AGENT_CHR3,
     AGENT_CHR1,
     AGENT_CHR2,
     DRINK_CHR,
@@ -228,9 +228,7 @@ class GridworldZooBaseEnv:
         }
 
         self.super_initargs = {
-            "env_name": self.metadata.get(
-                "env_experiment", "aintelope.aintelope_savanna"
-            )
+            "env_name": "aintelope.environments.ai_safety_gridworlds.aintelope_savanna"
         }
 
         for super_initargs_key, metadata_key in metadata_to_super_initargs_dict.items():
