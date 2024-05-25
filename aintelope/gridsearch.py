@@ -26,7 +26,7 @@ from flatten_dict.reducers import make_reducer
 from aintelope.utils import RobustProgressBar, wait_for_enter
 
 from aintelope.analytics import plotting, recording
-from aintelope.pipeline import (
+from aintelope.gridsearch_pipeline import (
     num_workers,
     gpu_count,
     worker_count_multiplier,
