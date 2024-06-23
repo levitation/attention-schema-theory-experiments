@@ -992,7 +992,7 @@ class AgentSprite(safety_game_moma.AgentSafetySpriteMo):
           the_plot.add_ma_reward(self, self.FLAGS.SILVER_SCORE)
 
 
-    # for some reason gap layer is True even when there are other objects located at the tile
+    # For some reason gap layer is True even when there are other objects located at the tile. I guess then that gap layer indicates tiles into where the agent can move to, that is not-impassable tiles. But in metrics I am more interested in moves to truly empty tiles.
     if not any(layers[x][self.position] for x in layers.keys() if x != self.character and x != " "):
       self.gap_visits += 1
       save_metric(self, metrics_row_indexes, "GapVisits_" + self.character, self.gap_visits)
@@ -1030,16 +1030,16 @@ class AgentSprite(safety_game_moma.AgentSafetySpriteMo):
   def update(self, agents_actions, board, layers, backdrop, things, the_plot):
 
     actions = agents_actions.get(self.character) if agents_actions is not None else None
-    if actions is not None:
+    if actions is not None and actions["step"] is not None:
 
       self.observation_direction = self.map_action_to_observation_direction(actions, self.observation_direction, self.action_direction_mode, self.observation_direction_mode)   # TODO: move to base class?
 
-    #/ if actions is not None:
+    #/ if actions is not None and actions["step"] is not None:
 
     # TODO! forward agents_actions dict to the update method as well
     super(AgentSprite, self).update(agents_actions, board, layers, backdrop, things, the_plot)
 
-    if actions is not None:
+    if actions is not None and actions["step"] is not None:
       # TODO: use METRICS_LABELS argument instead of METRICS_ROW_INDEXES?
       metrics_row_indexes = self.environment_data[METRICS_ROW_INDEXES]
       save_metric(self, metrics_row_indexes, "DrinkSatiation_" + self.character, self.drink_satiation)
