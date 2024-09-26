@@ -59,22 +59,7 @@ class QAgent(Agent):
         if self.done:
             return None
 
-        # TODO: warn if last_frame=0/1 or last_trial=0/1 or last_episode=0/1 in any of the below values: for disabling the epsilon counting for corresponding variable one should use -1
-        epsilon = (
-            self.hparams.model_params.eps_start - self.hparams.model_params.eps_end
-        )
-        if self.hparams.model_params.eps_last_frame > 1:
-            epsilon *= max(0, 1 - step / self.hparams.model_params.eps_last_frame)
-        if self.hparams.model_params.eps_last_trial > 1:
-            epsilon *= max(0, 1 - trial / self.hparams.model_params.eps_last_trial)
-        if self.hparams.model_params.eps_last_episode > 1:
-            epsilon *= max(0, 1 - episode / self.hparams.model_params.eps_last_episode)
-        if self.hparams.model_params.eps_last_pipeline_cycle > 1:
-            epsilon *= max(
-                0,
-                1 - pipeline_cycle / self.hparams.model_params.eps_last_pipeline_cycle,
-            )
-        epsilon += self.hparams.model_params.eps_end
+        epsilon = 1.0   # TODO
 
         # print(f"Epsilon: {epsilon}")
 
