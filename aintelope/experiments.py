@@ -26,6 +26,10 @@ def run_experiment(
 ) -> None:
     logger = logging.getLogger("aintelope.experiment")
 
+    if "ppo" in cfg.hparams.agent_class and not test_mode:
+        run_baseline_training(cfg)
+        return None
+
     # Environment
     env = get_env_class(cfg.hparams.env)(env_params=cfg.hparams.env_params)
     if isinstance(env, ParallelEnv):
@@ -113,6 +117,9 @@ def run_experiment(
                 checkpoint = prev_agent_checkpoint
 
         # Add agent, with potential checkpoint
+        if "ppo" in cfg.hparams.agent_class:
+            agents[-1].load_model(checkpoint)
+
         if not cfg.hparams.env_params.combine_interoception_and_vision:
             trainer.add_agent(
                 agent_id,
@@ -191,12 +198,7 @@ def run_experiment(
                     model_needs_saving = True
                     if i_episode % cfg.hparams.save_frequency == 0:
                         os.makedirs(dir_cp, exist_ok=True)
-                        trainer.save_models(
-                            i_episode,
-                            dir_cp,
-                            experiment_name,
-                            use_separate_models_for_each_experiment,
-                        )
+                        save_models()
                         model_needs_saving = False
                 else:
                     model_needs_saving = True
@@ -435,9 +437,7 @@ def run_experiment(
         model_needs_saving
     ):  # happens when num_episodes is not divisible by save frequency
         os.makedirs(dir_cp, exist_ok=True)
-        trainer.save_models(
-            i_episode, dir_cp, experiment_name, use_separate_models_for_each_experiment
-        )
+        save_models()
 
     # normalise slashes in paths. This is not mandatory, but will be cleaner to debug
     experiment_dir = os.path.normpath(cfg.experiment_dir)
@@ -448,6 +448,56 @@ def run_experiment(
     rec.record_events(
         record_path, events
     )  # TODO: flush the events log every once a while and later append new rows
+
+    def save_models():
+        if "ppo" in cfg.hparams.agent_class:
+            for agent in agents:
+                agent.save_model()
+        else:
+            trainer.save_models(
+                i_episode,
+                dir_cp,
+                experiment_name,
+                use_separate_models_for_each_experiment,
+            )
+
+
+def run_baseline_training(cfg: DictConfig):
+    """
+    This is a copy of the above run_experiment() function
+    to accommodate stable_baselines agents' training.
+    """
+
+    env = get_env_class(cfg.env_params.env)(env_params=cfg.env_params)
+
+    # Add agents
+    agents = []
+    dones = {}
+    for i in range(env.max_num_agents):
+        agent_id = f"agent_{i}"
+        agents.append(
+            get_agent_class(cfg.agent_params.agent_class)(
+                agent_id=agent_id,
+                trainer=None,
+                cfg=cfg,
+                env=env,
+            )
+        )
+
+    # Train
+    for i_episode in range(cfg.run_params.num_episodes):
+        seed = i_episode
+        env = get_env_class(cfg.env_params.env)(env_params=cfg.env_params)
+        env.reset(trial_no=seed)
+
+        for agent in agents:
+            agent.set_env(env)
+            # WORKS ONLY FOR ONE AGENT ATM! Cutoff here to synchronize the run
+            agent.train(cfg.run_params.num_steps)
+
+    # Save models
+    for agent in agents:
+        agent.save_model()
 
 
 # @hydra.main(version_base=None, config_path="config", config_name="config_experiment")

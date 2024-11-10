@@ -2,6 +2,7 @@ from typing import Mapping, Type
 from aintelope.agents.abstract_agent import Agent
 from aintelope.agents.instinct_agent import InstinctAgent
 from aintelope.agents.q_agent import QAgent
+from aintelope.agents.ppo_agent import PPOAgent
 from aintelope.agents.simple_agents import (
     IterativeWeightOptimizationAgent,
     OneStepPerfectPredictionAgent,
@@ -31,3 +32,4 @@ register_agent_class(
 )
 register_agent_class("q_agent", QAgent)
 register_agent_class("instinct_agent", InstinctAgent)
+register_agent_class("ppo_agent", PPOAgent)
