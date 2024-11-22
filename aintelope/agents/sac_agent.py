@@ -50,8 +50,8 @@ class SACAgent:
         ] = [],  # unused, argument present for compatibility with other agents
     ) -> None:
         self.id = agent_id
-        self.trainer = trainer
-        self.hparams = trainer.hparams
+        self.trainer = None
+        self.hparams = None
         self.done = False
         self.last_action = None
         env = ss.pettingzoo_env_to_vec_env_v1(env)
