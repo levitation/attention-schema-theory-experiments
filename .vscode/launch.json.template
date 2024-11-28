@@ -4,6 +4,18 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "env": {
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
         //-----------------------------------------------------------------------------------
         // Configurations to run single environment with X agent and default params
         //-----------------------------------------------------------------------------------
@@ -14,10 +26,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_random"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -27,10 +39,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_instinct"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -40,10 +52,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -53,10 +65,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -66,13 +78,28 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
-        // Baselines
+        {
+            "name": "Python: Run single environment with example agent and default params",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/nonpipeline.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        //-----------------------------------------------------------------------------------
+        // Configurations to run single environment with baseline agent
+        //-----------------------------------------------------------------------------------
         {
             "name": "Python: Run single environment with PPO agent and default params",
             "type": "python",
@@ -80,10 +107,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_ppo"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                "PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -93,10 +120,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_dqn"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                "PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -106,10 +133,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_td3"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                "PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -119,10 +146,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_ddpg"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                "PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -132,10 +159,10 @@
             "program": "aintelope/nonpipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_sac"],
             "env": {
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                "PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -148,11 +175,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_random"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -162,11 +189,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_instinct"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -176,11 +203,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         /* TODO
@@ -191,11 +218,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         */
@@ -206,11 +233,25 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        {
+            "name": "Python: Run pipeline with example agent and default params",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/pipeline.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                "PIPELINE_CONFIG": "config_pipeline.yaml",
+                //"PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -223,11 +264,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_mixed10.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         /* TODO
@@ -238,11 +279,11 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_reward10.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         */
@@ -253,11 +294,25 @@
             "program": "aintelope/pipeline.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_score10.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        {
+            "name": "Python: Run pipeline with example agent and per environment optimised params",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/pipeline.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                "PIPELINE_CONFIG": "config_pipeline_exampleagent10.yaml",
+                //"PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -270,12 +325,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_random"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_random.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -285,12 +340,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_instinct"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_instinct.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -300,12 +355,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_mixed.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -315,12 +370,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_reward.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -330,12 +385,27 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_score.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        {
+            "name": "Python: Run multiple trials pipeline with example agent and default param (use only for debugging)",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/gridsearch.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                "PIPELINE_CONFIG": "config_pipeline.yaml",
+                "GRIDSEARCH_CONFIG": "config_trials_exampleagent.yaml",
+                //"PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -348,12 +418,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_mixed10.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_mixed.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         /* TODO
@@ -364,12 +434,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_reward10.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_reward.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         */
@@ -380,12 +450,27 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline_score10.yaml",
                 "GRIDSEARCH_CONFIG": "config_trials_score.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        {
+            "name": "Python: Run multiple trials pipeline with example agent and per environment optimised params",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/gridsearch.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                "PIPELINE_CONFIG": "config_pipeline_exampleagent10.yaml",
+                "GRIDSEARCH_CONFIG": "config_trials_exampleagent.yaml",
+                //"PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -398,12 +483,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_mixed"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_gridsearch_mixed.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -413,12 +498,12 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_reward"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_gridsearch_reward.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -428,12 +513,27 @@
             "program": "aintelope/gridsearch.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": ["--config-name=config_experiment_score"],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
                 "GRIDSEARCH_CONFIG": "config_gridsearch_score.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
+            }
+        },
+        {
+            "name": "Python: Run gridsearch pipeline with example agent",
+            "type": "python",
+            "request": "launch",
+            "program": "aintelope/gridsearch.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "showUncaughtExceptions": true,
+            "args": ["--config-name=config_experiment_exampleagent"],
+            "env": {
+                "PIPELINE_CONFIG": "config_pipeline.yaml",
+                "GRIDSEARCH_CONFIG": "config_gridsearch_exampleagent.yaml",
+                //"PYTHONPATH": "your_path_here"
             }
         },
         //-----------------------------------------------------------------------------------
@@ -446,11 +546,11 @@
             "program": "aintelope/environments/demos/gridworlds/food_unbounded.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -460,11 +560,11 @@
             "program": "aintelope/environments/demos/gridworlds/danger_tiles.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -474,11 +574,11 @@
             "program": "aintelope/environments/demos/gridworlds/predators.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -488,11 +588,11 @@
             "program": "aintelope/environments/demos/gridworlds/homeostasis.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -502,11 +602,11 @@
             "program": "aintelope/environments/demos/gridworlds/sustainability.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -516,11 +616,11 @@
             "program": "aintelope/environments/demos/gridworlds/food_unbounded.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -530,11 +630,11 @@
             "program": "aintelope/environments/demos/gridworlds/food_drink_homeostasis.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -544,11 +644,11 @@
             "program": "aintelope/environments/demos/gridworlds/food_drink_homeostasis_gold.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },
         {
@@ -558,11 +658,11 @@
             "program": "aintelope/environments/demos/gridworlds/food_drink_homeostasis_gold_silver.py",
             "console": "integratedTerminal",
             "justMyCode": false,
-			"showUncaughtExceptions": true,
+            "showUncaughtExceptions": true,
             "args": [],
             "env": {
                 "PIPELINE_CONFIG": "config_pipeline.yaml",
-                "PYTHONPATH": "/home/joel/project/aintelope/"
+                //"PYTHONPATH": "your_path_here"
             }
         },        
     ]
