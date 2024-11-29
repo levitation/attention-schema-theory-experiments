@@ -15,6 +15,13 @@ from omegaconf import DictConfig
 import numpy as np
 import numpy.typing as npt
 
+from typing import Union
+import gymnasium as gym
+from pettingzoo import AECEnv, ParallelEnv
+
+PettingZooEnv = Union[AECEnv, ParallelEnv]
+Environment = Union[gym.Env, PettingZooEnv]
+
 from aintelope.environments.savanna_safetygrid import ACTION_RELATIVE_COORDINATE_MAP
 
 from aintelope.agents.q_agent import QAgent
