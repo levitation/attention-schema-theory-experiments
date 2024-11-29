@@ -162,7 +162,7 @@ class DQNAgent:
         checkpoint_dir = os.path.normpath(self.cfg.checkpoint_dir)
         path = os.path.join(dir_out, checkpoint_dir)
         os.makedirs(path, exist_ok=True)
-        checkpoint_filename = self.params.experiment_name + "_" + self.id
+        checkpoint_filename = self.cfg.experiment_name + "_" + self.id
         filename = os.path.join(
             path,
             checkpoint_filename
