@@ -160,8 +160,8 @@ class TD3Agent:
     def train(self, steps):
         self.model.learn(total_timesteps=steps)
 
-    def set_env(self, env):
-        self.model.set_env(env)
+    # def set_env(self, env):
+    #    self.model.set_env(env)
 
     def save_model(self):
         dir_out = os.path.normpath(self.params.log_dir)
