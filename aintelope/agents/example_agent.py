@@ -132,10 +132,10 @@ class ExampleAgent(QAgent):
         reward = 0  # TODO
         # print(f"reward: {reward}")
 
-        if next_state is not None:
-            next_s_hist = next_state
-        else:
-            next_s_hist = None
+        # if next_state is not None:
+        #    next_s_hist = next_state
+        # else:
+        #    next_s_hist = None
 
         event = [self.id, self.state, self.last_action, reward, done, next_state]
         self.state = next_state

@@ -1,9 +1,3 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at https://mozilla.org/MPL/2.0/.
-#
-# Repository: https://github.com/aintelope/biological-compatibility-benchmarks
-
 import logging
 from typing import List, NamedTuple, Optional, Tuple
 from gymnasium.spaces import Discrete
@@ -169,10 +163,10 @@ class QAgent(Agent):
 
         next_state = observation
 
-        if next_state is not None:
-            next_s_hist = next_state
-        else:
-            next_s_hist = None
+        # if next_state is not None:
+        #    next_s_hist = next_state
+        # else:
+        #    next_s_hist = None
         # self.history.append(
         #    HistoryStep(
         #        state=self.state,
