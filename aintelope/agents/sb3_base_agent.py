@@ -188,7 +188,11 @@ class SB3BaseAgent(Agent):
 
         self.total_steps_across_episodes += 1
         if self.progressbar is not None:
-            self.progressbar.update(self.total_steps_across_episodes)
+            self.progressbar.update(
+                min(
+                    self.total_steps_across_episodes, self.progressbar.max_value
+                )  # PPO does extra episodes, which causes the step counter to go beyond max_value of progress bar
+            )
 
         i_pipeline_cycle = self.i_pipeline_cycle
         i_episode = (
@@ -266,7 +270,11 @@ class SB3BaseAgent(Agent):
 
         self.total_steps_across_episodes += 1
         if self.progressbar is not None:
-            self.progressbar.update(self.total_steps_across_episodes)
+            self.progressbar.update(
+                min(
+                    self.total_steps_across_episodes, self.progressbar.max_value
+                )  # PPO does extra episodes, which causes the step counter to go beyond max_value of progress bar
+            )
 
         action = np.asarray(
             action
@@ -338,7 +346,6 @@ class SB3BaseAgent(Agent):
             observation: Tuple[ObservationArray, ObservationArray]
             score: Only baseline uses score as a reward
             done: boolean whether run is done
-            save_path: str
         Returns:
             agent_id (str): same as elsewhere ("agent_0" among them)
             state (Tuple[npt.NDArray[ObservationFloat], npt.NDArray[ObservationFloat]]): input for the net
