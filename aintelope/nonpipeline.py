@@ -33,7 +33,7 @@ def aintelope_main(cfg: DictConfig) -> None:
     score_dimensions = get_score_dimensions(cfg)
 
     # train
-    run_experiment(
+    num_actual_train_episodes = run_experiment(
         cfg,
         experiment_name="Nonpipeline",
         score_dimensions=score_dimensions,
@@ -48,6 +48,7 @@ def aintelope_main(cfg: DictConfig) -> None:
         score_dimensions=score_dimensions,
         test_mode=True,
         i_pipeline_cycle=0,
+        num_actual_train_episodes=num_actual_train_episodes,
     )
 
     title = timestamp + " : Nonpipeline"

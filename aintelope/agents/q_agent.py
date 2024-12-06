@@ -43,11 +43,9 @@ class QAgent(Agent):
         self,
         agent_id: str,
         trainer: Trainer,
-        env: Environment,
+        env: Environment = None,
         cfg: DictConfig = None,
-        target_instincts: List[
-            str
-        ] = [],  # unused, argument present for compatibility with other agents
+        **kwargs,
     ) -> None:
         self.id = agent_id
         self.trainer = trainer

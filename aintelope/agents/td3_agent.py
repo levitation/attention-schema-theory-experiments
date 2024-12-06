@@ -2,7 +2,10 @@ import logging
 from typing import List, NamedTuple, Optional, Tuple
 from gymnasium.spaces import Discrete
 
+import pandas as pd
 from omegaconf import DictConfig
+
+from aintelope.utils import RobustProgressBar
 
 import numpy as np
 import numpy.typing as npt
@@ -26,16 +29,7 @@ PettingZooEnv = Union[AECEnv, ParallelEnv]
 Environment = Union[gym.Env, PettingZooEnv]
 
 
-logger = logging.getLogger("aintelope.agents.q_agent")
-
-
-class HistoryStep(NamedTuple):
-    state: Tuple[npt.NDArray[ObservationFloat], npt.NDArray[ObservationFloat]]
-    action: int
-    reward: float
-    done: bool
-    instinct_events: List[Tuple[str, int]]
-    next_state: Tuple[npt.NDArray[ObservationFloat], npt.NDArray[ObservationFloat]]
+logger = logging.getLogger("aintelope.agents.td3_agent")
 
 
 class TD3Agent:
@@ -50,9 +44,11 @@ class TD3Agent:
         trainer: Trainer,
         env: Environment,
         cfg: DictConfig,
-        target_instincts: List[
-            str
-        ] = [],  # unused, argument present for compatibility with other agents
+        i_pipeline_cycle: int = 0,
+        events: pd.DataFrame = None,
+        score_dimensions: list = [],
+        progressbar: RobustProgressBar = None,
+        **kwargs,
     ) -> None:
         self.id = agent_id
         self.env = env

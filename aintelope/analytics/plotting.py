@@ -14,8 +14,9 @@ import matplotlib.path as mpath
 import math
 import numpy as np
 import pandas as pd
-from matplotlib import cm
+
 from matplotlib import pyplot as plt
+
 import yaml
 
 """
@@ -238,7 +239,7 @@ def plot_performance(
     ] = True  # ensure that plot labels fit to the image and do not overlap
 
     # fig = plt.figure()
-    fig, subplots = plt.subplots(3)
+    fig, subplots = plt.subplots(len(plot_datas))
 
     linewidth = 0.75  # TODO: config
 
