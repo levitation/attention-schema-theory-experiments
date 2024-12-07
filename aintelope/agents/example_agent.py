@@ -42,14 +42,20 @@ class ExampleAgent(Agent):
         cfg: DictConfig = None,
         **kwargs,
     ) -> None:
-        super().__init__(
-            agent_id=agent_id,
-            trainer=trainer,
-        )
+        self.id = agent_id
+        self.trainer = trainer
+        self.env = env
+        self.cfg = cfg
+        self.done = False
+        self.last_action = None
 
     def reset(self, state, info, env_class) -> None:
         """Resets self and updates the state."""
-        super().reset(state, info, env_class)
+        self.done = False
+        self.last_action = None
+        self.state = state
+        self.info = info
+        self.env_class = env_class
 
     def get_action(
         self,
