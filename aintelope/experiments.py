@@ -278,7 +278,7 @@ def run_experiment(
                         dones[agent.id] = False
 
                 elif isinstance(env, AECEnv):
-                    env.reset(
+                    env.reset(  # TODO: actually savanna_safetygrid wrapper provides observations and infos as a return value, so need for branching here
                         trial_no=trial_no
                     )  # if not test_mode else -(trial_no - cfg.hparams.num_episodes + 1))
                     for agent in agents:

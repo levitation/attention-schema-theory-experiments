@@ -60,6 +60,7 @@ def is_json_serializable(item: Any) -> bool:
     return False
 
 
+# TODO: move to a separate file
 class CustomCNN(BaseFeaturesExtractor):
     def __init__(self, observation_space, features_dim=256):
         super().__init__(observation_space, features_dim)

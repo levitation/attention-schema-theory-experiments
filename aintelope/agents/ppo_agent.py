@@ -21,6 +21,7 @@ import datetime
 from aintelope.agents.sb3_base_agent import SB3BaseAgent, CustomCNN
 from aintelope.aintelope_typing import ObservationFloat, PettingZooEnv
 from aintelope.training.dqn_training import Trainer
+from aintelope.environments.zoo_to_gym_wrapper import ZooToGymWrapper
 
 from ai_safety_gridworlds.helpers.gridworld_zoo_parallel_env import (
     INFO_REWARD_DICT,

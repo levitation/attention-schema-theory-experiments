@@ -18,9 +18,13 @@ import numpy.typing as npt
 import os
 import datetime
 
-from aintelope.agents.sb3_base_agent import SB3BaseAgent, CustomCNN
+from aintelope.agents.sb3_base_agent import (
+    SB3BaseAgent,
+    CustomCNN,
+)
 from aintelope.aintelope_typing import ObservationFloat, PettingZooEnv
 from aintelope.training.dqn_training import Trainer
+from aintelope.environments.zoo_to_gym_wrapper import ZooToGymWrapper
 
 from stable_baselines3 import DQN
 import supersuit as ss
@@ -49,10 +53,12 @@ class DQNAgent(SB3BaseAgent):
     ) -> None:
         super().__init__(env=env, **kwargs)
 
-        env = ss.pettingzoo_env_to_vec_env_v1(env)
-        env = ss.concat_vec_envs_v1(
-            env, num_vec_envs=1, num_cpus=1, base_class="stable_baselines3"
-        )  # NB! num_vec_envs=1 is important here so that we can use identity function instead of cloning in vec_env_args
+        # comment-out: DDPG does not support vectorised environment
+        # env = ss.pettingzoo_env_to_vec_env_v1(env)
+        # env = ss.concat_vec_envs_v1(
+        #    env, num_vec_envs=1, num_cpus=1, base_class="stable_baselines3"
+        # )  # NB! num_vec_envs=1 is important here so that we can use identity function instead of cloning in vec_env_args
+        env = ZooToGymWrapper(env)
 
         # policy_kwarg:
         # if you want to use CnnPolicy or MultiInputPolicy with image-like observation (3D tensor) that are already normalized, you must pass normalize_images=False

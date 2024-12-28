@@ -18,9 +18,13 @@ import numpy.typing as npt
 import os
 import datetime
 
-from aintelope.agents.sb3_base_agent import SB3BaseAgent, CustomCNN
+from aintelope.agents.sb3_base_agent import (
+    SB3BaseAgent,
+    CustomCNN,
+)
 from aintelope.aintelope_typing import ObservationFloat, PettingZooEnv
 from aintelope.training.dqn_training import Trainer
+from aintelope.environments.zoo_to_gym_wrapper import ZooToGymWrapper
 
 from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise
@@ -50,12 +54,16 @@ class TD3Agent(SB3BaseAgent):
     ) -> None:
         super().__init__(env=env, **kwargs)
 
-        env = ss.pettingzoo_env_to_vec_env_v1(env)
-        env = ss.concat_vec_envs_v1(
-            env, num_vec_envs=1, num_cpus=1, base_class="stable_baselines3"
-        )  # NB! num_vec_envs=1 is important here so that we can use identity function instead of cloning in vec_env_args
+        # comment-out: DDPG does not support vectorised environment
+        # env = ss.pettingzoo_env_to_vec_env_v1(env)
+        # env = ss.concat_vec_envs_v1(
+        #    env, num_vec_envs=1, num_cpus=1, base_class="stable_baselines3"
+        # )  # NB! num_vec_envs=1 is important here so that we can use identity function instead of cloning in vec_env_args
+        env = ZooToGymWrapper(env)
 
-        n_actions = env.action_space(self.id).n
+        n_actions = self.env.action_space(
+            self.id
+        ).n  # Use self.env to get access to original Zoo env API. In contrast, the env variable contains a Gym env with a different API.
         action_noise = NormalActionNoise(
             mean=np.zeros(n_actions),
             sigma=0.1 * np.ones(n_actions),  # TODO: config parameter for sigma
