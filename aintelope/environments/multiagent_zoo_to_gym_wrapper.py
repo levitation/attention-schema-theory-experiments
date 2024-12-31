@@ -15,8 +15,10 @@ from pettingzoo import AECEnv, ParallelEnv
 
 def saferecv(pipe, source_process):
     """
-    pipe.recv() may hang when the other side dies, and not throw EOFError() as the documentation seems to promise.
-    This function here works around that.
+    pipe.recv() may hang when the other side dies, and not throw EOFError()
+    as the documentation seems to promise. This function here attempts to
+    work around that. Though in certain corner cases even this function
+    here would not help.
     """
     while True:
         if pipe.poll(timeout=1):
@@ -40,7 +42,9 @@ class MultiAgentZooToGymWrapperGymSide(gym.Env):
     other agents have taken their step as well.
     """
 
-    def __init__(self, pipe, agent_id, observation_space, action_space):
+    def __init__(
+        self, pipe, agent_id, checkpoint_filename, observation_space, action_space
+    ):
         super().__init__()
 
         parent_pid = os.getppid()
@@ -53,6 +57,8 @@ class MultiAgentZooToGymWrapperGymSide(gym.Env):
         self.sender_pipe = sender_pipe
 
         self.agent_id = agent_id
+        self.checkpoint_filename = checkpoint_filename
+
         self.observation_space = observation_space
         self.action_space = action_space
 
@@ -111,13 +117,27 @@ class MultiAgentZooToGymWrapperGymSide(gym.Env):
         """
         pass
 
-    def return_model(self, model):
+    def save_or_return_model(self, model, filename_timestamp_sufix_str=None):
         """
         Called outside of SB3 model, after SB3 training ends normally
         """
-        if not self.parent_process.is_running():
-            raise BrokenPipeError()
-        self.sender_pipe.send(["return_model", model])
+        if (
+            self.checkpoint_filename is not None
+        ):  # some SB3 models do not support pickling, thus it is better to save them directly from the training thread
+            filename = self.checkpoint_filename
+            if filename_timestamp_sufix_str is not None:
+                filename += "-" + filename_timestamp_sufix_str
+
+            model.save(filename)
+
+            if not self.parent_process.is_running():
+                raise BrokenPipeError()
+            self.sender_pipe.send(["model_saved", filename])
+
+        else:
+            if not self.parent_process.is_running():
+                raise BrokenPipeError()
+            self.sender_pipe.send(["return_model", model])
 
     def terminate_with_exception(self, ex):
         """
@@ -155,6 +175,7 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
         agent_thread_entry_point,
         model_constructor,
         terminate_all_agents_when_one_excepts=True,
+        checkpoint_filenames=None,
         seed=None,
         options=None,
         *args,
@@ -166,9 +187,15 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
 
         gpu_count = torch.cuda.device_count()
 
-        # start Gym threads via thread_entry_point, send (pipe, gpu, num_total_steps, model_constructor, agent_id, observation_space, action_space) to each
+        # start Gym threads via agent_thread_entry_point, send (pipe, gpu_index, num_total_steps, model_constructor, agent_id, cfg, observation_space, action_space) to each
         self.agent_processes = []
         for agent_index, agent_id in enumerate(self.agent_ids):
+            checkpoint_filename = (
+                checkpoint_filenames[agent_id]
+                if checkpoint_filenames is not None
+                else None
+            )
+
             observation_space = self.env.observation_spaces[agent_id]
             action_space = self.env.action_spaces[agent_id]
 
@@ -186,12 +213,13 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                 num_total_steps,
                 model_constructor,
                 agent_id,
+                checkpoint_filename,
                 self.cfg,
                 observation_space,
                 action_space,
             )
 
-            # TODO: redirect stdio in such a manner that multi-line output from child processes does not get mixed in case of a race condition when multiple processes output at the same time
+            # TODO: Redirect stdio in such a manner that multi-line output from child processes does not get mixed in case of a race condition when multiple processes output at the same time. Though this is not urgent, currently it seems it does not get mixed up.
             # proc = await asyncio.create_subprocess_exec(
             #    "python",
             #    *args,
@@ -294,6 +322,11 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                     (_, seed, options, thread_reset_args, thread_reset_kwargs) = data
                     # we will ignore any data that was provided in the reset arguments
                     agent_process_data[3] = True  # is_in_reset = True
+
+                elif data[0] == "model_saved":
+                    (_, checkpoint_filename) = data
+                    models[agent_id] = checkpoint_filename
+                    agent_process_data[4] = True  # training_complete = True
 
                 elif data[0] == "return_model":
                     (_, model) = data
@@ -404,7 +437,7 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                                 "The agent process died unexpectedly"
                             )
                             agent_process_data[4] = True  # training_complete = True
-                            break  # break repeat reset loop
+                            break  # break repeat reset handling loop
 
                         if data[0] == "reset":
                             (
@@ -418,8 +451,8 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
 
                             if (
                                 is_in_reset
-                            ):  # if previous command was also reset, then ignore it
-                                # send reset result to Gym thread
+                            ):  # if previous command was also reset, then ignore the new reset
+                                # send previous reset result again to the Gym thread
                                 observation = observations[agent_id]
                                 info = infos[agent_id]
                                 try:
@@ -432,29 +465,35 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                                     agent_process_data[
                                         3
                                     ] = True  # training_complete = True
-                                    break  # break repeat reset loop
+                                    break  # break repeat reset handling loop
                             else:
                                 agent_process_data[3] = True  # is_in_reset = True
                                 resets.add(agent_id)
-                                break  # break repeat reset loop
+                                break  # break repeat reset handling loop
 
                         elif data[0] == "step":
                             agent_process_data[3] = False  # is_in_reset = False
                             (_, action) = data
                             actions[agent_id] = action
-                            break  # break repeat reset loop
+                            break  # break repeat reset handling loop
+
+                        elif data[0] == "model_saved":
+                            (_, checkpoint_filename) = data
+                            models[agent_id] = checkpoint_filename
+                            agent_process_data[4] = True  # training_complete = True
+                            break  # break repeat reset handling loop
 
                         elif data[0] == "return_model":
                             (_, model) = data
                             models[agent_id] = model
                             agent_process_data[4] = True  # training_complete = True
-                            break  # break repeat reset loop
+                            break  # break repeat reset handling loop
 
                         elif data[0] == "return_exception":
                             (_, ex) = data
                             exceptions[agent_id] = ex
                             agent_process_data[4] = True  # training_complete = True
-                            break  # break repeat reset loop
+                            break  # break repeat reset handling loop
 
                         else:
                             raise ValueError(
@@ -470,10 +509,12 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                     # all remaining active agents called reset or returned a model or exception at the same time
                     break  # go to outer loop over episodes
 
-                elif any(resets) or any(models):
-                    # If at least one Gym thread decides to reset or finish training, then send termination responses to all other threads and wait for them to call reset
-                    # Sutton and Barto uses terminal states to specifically refer to special states whose values are 0, states at the end of the MDP. This is not true for a truncation where the value of the final state need not be 0.
-                    # https://github.com/openai/gym/pull/2752
+                elif terminate_all_agents_when_one_excepts and any(exceptions):
+                    # we will below force-terminate all other training threads, so nothing needs to be done here (after which the agent will trigger an exception and exit the thread/process)
+                    pass
+
+                elif any(resets) or any(exceptions) or any(models):
+                    # TODO: this could be configurable: If at least one Gym thread decides to reset or finish training (with an exception or a model result), then send termination responses to all other threads and wait for them to call reset
 
                     # TODO: Maybe there is no need to get new observations from the environment in this case?
                     (
@@ -484,6 +525,8 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
                         infos,
                     ) = self.env.step(actions)
 
+                    # Sutton and Barto uses terminal states to specifically refer to special states whose values are 0, states at the end of the MDP. This is not true for a truncation where the value of the final state need not be 0.
+                    # https://github.com/openai/gym/pull/2752
                     # terminate all agents regardless of what the environment responded
                     terminations = {agent_id: True for agent_id in terminations.keys()}
 
@@ -566,10 +609,10 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
 
                 # / for agent_process_data in self.agent_processes:
 
-                if any(resets) or any(models):
-                    break
-                elif terminate_all_agents_when_one_excepts and any(exceptions):
-                    break
+                if terminate_all_agents_when_one_excepts and any(exceptions):
+                    break  # the training threads were sent force-termination commands (the agent will trigger an exception and exit the thread/process)
+                elif any(resets) or any(exceptions) or any(models):
+                    break  # TODO: this could be configurable: The agents were sent Gym terminated statuses above (the agent continues running, but starts a new episode by calling reset command next)
 
             # / while True: # loop over steps
 
@@ -654,6 +697,11 @@ class MultiAgentZooToGymWrapperZooSide(gym.Env):
 
     #                elif data[0] == "close":
     #                    # TODO: terminate the agent
+    #                    break
+
+    #                elif data[0] == "model_saved":
+    #                    (_, checkpoint_filename) = data
+    #                    models[agent_id] = checkpoint_filename
     #                    break
 
     #                elif data[0] == "return_model":

@@ -132,6 +132,7 @@ def sb3_agent_train_thread_entry_point(
     num_total_steps,
     model_constructor,
     agent_id,
+    checkpoint_filename,
     cfg,
     observation_space,
     action_space,
@@ -150,21 +151,21 @@ def sb3_agent_train_thread_entry_point(
     select_gpu(gpu_index)
 
     env_wrapper = MultiAgentZooToGymWrapperGymSide(
-        pipe, agent_id, observation_space, action_space
+        pipe, agent_id, checkpoint_filename, observation_space, action_space
     )
     try:
         model = model_constructor(env_wrapper, cfg)
         model.learn(total_timesteps=num_total_steps)
+        filename_timestamp_sufix_str = datetime.datetime.now().strftime(
+            "%Y_%m_%d_%H_%M_%S_%f"
+        )
+        env_wrapper.save_or_return_model(model, filename_timestamp_sufix_str)
     except (
         Exception
     ) as ex:  # NB! need to catch exception so that the env wrapper can signal the training ended
         info = str(ex) + os.linesep + traceback.format_exc()
         env_wrapper.terminate_with_exception(info)
         print(info)
-        return
-
-    env_wrapper.return_model(model)
-    return
 
 
 class SB3BaseAgent(Agent):
@@ -180,6 +181,7 @@ class SB3BaseAgent(Agent):
         trainer: Trainer,
         env: Environment,
         cfg: DictConfig,
+        test_mode: bool = False,
         i_pipeline_cycle: int = 0,
         events: pd.DataFrame = None,
         score_dimensions: list = [],
@@ -189,6 +191,7 @@ class SB3BaseAgent(Agent):
         self.id = agent_id
         self.cfg = cfg
         self.env = env
+        self.test_mode = test_mode
         self.i_pipeline_cycle = i_pipeline_cycle
         self.next_episode_no = 0
         self.total_steps_across_episodes = 0
@@ -255,11 +258,13 @@ class SB3BaseAgent(Agent):
         action = np.asarray(
             action
         ).item()  # SB3 sends actions in wrapped into an one-item array for some reason. np.asarray is also able to handle lists.
-        # if isinstance(action_space, Discrete):
-        #    min_action = action_space.start
-        # else:
-        #    min_action = action_space.min_action
-        # action = action + min_action
+
+        action_space = self.env.action_spaces[self.id]
+        if isinstance(action_space, Discrete):
+            min_action = action_space.start
+        else:
+            min_action = action_space.min_action
+        assert action >= min_action
 
         self.state = observation
         self.states[self.id] = observation  # TODO: multi-agent support
@@ -503,12 +508,16 @@ class SB3BaseAgent(Agent):
         if self.model is not None:  # single-model scenario
             self.model.learn(total_timesteps=num_total_steps)
         else:
+            checkpoint_filenames = self.get_checkpoint_filenames(
+                include_timestamp=False
+            )
             env_wrapper = MultiAgentZooToGymWrapperZooSide(self.env, self.cfg)
             self.models, self.exceptions = env_wrapper.train(
                 num_total_steps=num_total_steps,
                 agent_thread_entry_point=sb3_agent_train_thread_entry_point,
                 model_constructor=self.model_constructor,
                 terminate_all_agents_when_one_excepts=True,
+                checkpoint_filenames=checkpoint_filenames,
             )
 
         self.env._pre_reset_callback2 = None
@@ -518,24 +527,53 @@ class SB3BaseAgent(Agent):
         if self.exceptions:
             raise Exception(str(self.exceptions))
 
-    def save_model(self):
+    def get_checkpoint_filenames(self, include_timestamp=True):
+        checkpoint_filenames = {}
+
+        experiment_name = self.cfg.experiment_name
+        use_separate_models_for_each_experiment = (
+            self.cfg.hparams.use_separate_models_for_each_experiment
+        )
+        # if not use_separate_models_for_each_experiment:
+        #    raise NotImplementedError("sharing models over experiments is not implemented yet")
+
         dir_out = os.path.normpath(self.cfg.log_dir)
         checkpoint_dir = os.path.normpath(self.cfg.checkpoint_dir)
         path = os.path.join(dir_out, checkpoint_dir)
         os.makedirs(path, exist_ok=True)
 
-        models = [self.model] if self.model is not None else self.models
+        for agent_id in self.env.possible_agents:
+            checkpoint_filename = agent_id
+            if use_separate_models_for_each_experiment:
+                checkpoint_filename += "-" + experiment_name
 
-        for model, agent_id in zip(models, self.env.possible_agents):
-            checkpoint_filename = self.cfg.experiment_name + "_" + agent_id
-            filename = os.path.join(
-                path,
-                checkpoint_filename
-                + "-"
-                + datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f"),
-            )
-            model.save(filename)
+            filename = os.path.join(path, checkpoint_filename)
+
+            if include_timestamp:
+                filename += "-" + datetime.datetime.now().strftime(
+                    "%Y_%m_%d_%H_%M_%S_%f"
+                )
+
+            checkpoint_filenames[agent_id] = filename
+
+        return checkpoint_filenames
+
+    def save_model(self):
+        checkpoint_filenames = self.get_checkpoint_filenames(include_timestamp=True)
+        models = {self.id: self.model} if self.model is not None else self.models
+
+        for agent_id, model in models.items():
+            if not isinstance(
+                model, str
+            ):  # model can contain a path to an already saved model
+                checkpoint_filename = checkpoint_filenames[agent_id]
+                model.save(checkpoint_filename)
 
     def load_model(self, checkpoint):
-        if checkpoint:
-            self.model.load(checkpoint)
+        # torch.cuda.device_count() > 0 : SB3 does not support CPU-based CUDA device during model load for some reason
+        use_cuda = torch.cuda.is_available() and torch.cuda.device_count() > 0
+        device = torch.device("cuda" if use_cuda else "cpu")
+
+        self.model.load(
+            checkpoint, device=device
+        )  # device argument in needed in case the model is loaded to CPU. SB3 seems to be buggy in that regard that it will crash during model load if CPU device is not explicitly specified.

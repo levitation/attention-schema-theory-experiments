@@ -30,7 +30,7 @@ Environment = Union[gym.Env, PettingZooEnv]
 
 def run_experiment(
     cfg: DictConfig,
-    experiment_name: str = "",
+    experiment_name: str = "",  # TODO: remove this argument and read it from cfg.experiment_name
     score_dimensions: list = [],
     test_mode: bool = True,
     i_pipeline_cycle: int = 0,
@@ -108,6 +108,7 @@ def run_experiment(
                 trainer=trainer,
                 env=env,
                 cfg=cfg,
+                test_mode=test_mode,
                 **cfg.hparams.agent_params,
             )
         )
@@ -162,10 +163,12 @@ def run_experiment(
                 prev_agent_checkpoint is not None
             ):  # later experiments may have more agents    # TODO: configuration option for determining whether new agents can copy the checkpoints of earlier agents, and if so then specifically which agent's checkpoint to use
                 checkpoint = prev_agent_checkpoint
+            elif test_mode:
+                raise Exception("No trained model found, cannot run test!")
 
         # Add agent, with potential checkpoint
         if is_sb3:
-            if test_mode:
+            if checkpoint:
                 agents[-1].load_model(checkpoint)
             else:
                 pass
@@ -536,6 +539,9 @@ def run_baseline_training(
 
     # num_total_steps = cfg.hparams.env_params.num_iters * 1
     num_total_steps = cfg.hparams.env_params.num_iters * cfg.hparams.num_episodes
+
+    # During multi-agent multi-model training the actual agents will run in threads/subprocesses because SB3 requires Gym interface. Agent[0] will be used just as an interface to call train(), the SB3BaseAgent base class will automatically set up the actual agents.
+    # In case of multi-agent weight-shared model training it is partially similar: Agent[0] will be used just as an interface to call train(), the SB3 weight-shared model will handle the actual agents present in the environment.
 
     with RobustProgressBar(
         max_value=num_total_steps,  # TODO: somehow obtain the total number of steps PPO plans to actually take, considering that it rounds the number of steps up with some logic. The rounding up seems to be same every time, so it does not depend on the events happending during training.

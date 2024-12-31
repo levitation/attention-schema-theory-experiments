@@ -25,6 +25,7 @@ from aintelope.environments.singleagent_zoo_to_gym_wrapper import (
     SingleAgentZooToGymWrapper,
 )
 
+import torch
 import stable_baselines3
 from stable_baselines3 import PPO
 import supersuit as ss
@@ -40,6 +41,7 @@ Environment = Union[gym.Env, PettingZooEnv]
 logger = logging.getLogger("aintelope.agents.ppo_agent")
 
 
+# need separate function outside of class in order to init multi-model training threads
 def ppo_model_constructor(env, cfg):
     # policy_kwarg:
     # if you want to use CnnPolicy or MultiInputPolicy with image-like observation (3D tensor) that are already normalized, you must pass normalize_images=False
@@ -59,6 +61,7 @@ def ppo_model_constructor(env, cfg):
                 "num_conv_layers": cfg.hparams.model_params.num_conv_layers,
             },
         },
+        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     )
 
 
@@ -79,7 +82,11 @@ class PPOAgent(SB3BaseAgent):
 
         self.model_constructor = ppo_model_constructor
 
-        if self.env.num_agents == 1 or cfg.hparams.model_params.use_weight_sharing:
+        if (
+            self.env.num_agents == 1
+            or cfg.hparams.model_params.use_weight_sharing
+            or self.test_mode
+        ):  # during test, each agent has a separate in-process instance with its own model and not using threads/subprocesses
             # PPO supports weight sharing for multi-agent scenarios
             # TODO: Environment duplication support for parallel compute purposes. Abseil package needs to be replaced for that end.
             env = ss.pettingzoo_env_to_vec_env_v1(env)
@@ -88,24 +95,24 @@ class PPOAgent(SB3BaseAgent):
             )  # NB! num_vec_envs=1 is important here so that we can use identity function instead of cloning in vec_env_args
             self.model = self.model_constructor(env, cfg)
         else:
-            pass  # multi-model training will be automatically set up by the base class when self.model is None
+            pass  # multi-model training will be automatically set up by the base class when self.model is None. These models will be saved to self.models and there will be only one agent instance in the main process. Actual agents will run in threads/subprocesses because SB3 requires Gym interface.
 
     # this method is currently called only in test mode
     def reset(self, state, info, env_class) -> None:
         """Resets self and updates the state."""
         super().reset(state, info, env_class)
 
-    def get_action(self, **kwargs) -> Optional[int]:
+    def get_action(self, *args, **kwargs) -> Optional[int]:
         """Given an observation, ask your net what to do. State is needed to be
         given here as other agents have changed the state!
 
         Returns:
             action (Optional[int]): index of action
         """
-        action = super().get_action(**kwargs)
+        action = super().get_action(*args, **kwargs)
         return action
 
-    def update(self, **kwargs) -> list:
+    def update(self, *args, **kwargs) -> list:
         """
         Takes observations and updates trainer on perceived experiences.
         Needed here to catch instincts.
@@ -124,7 +131,7 @@ class PPOAgent(SB3BaseAgent):
             done (bool): if agent is done
             next_state (npt.NDArray[ObservationFloat]): input for the net
         """
-        event = super().update(**kwargs)
+        event = super().update(*args, **kwargs)
         return event
 
     def train(self, steps):

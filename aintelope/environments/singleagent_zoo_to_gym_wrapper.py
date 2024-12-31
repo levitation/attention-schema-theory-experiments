@@ -15,15 +15,13 @@ class SingleAgentZooToGymWrapper(gym.Env):
     Both Zoo ParallelEnv and Zoo AECEnv (sequential env) are supported.
     """
 
-    def __init__(self, zoo_env):
+    def __init__(self, zoo_env, agent_id):
         super().__init__()
 
-        assert zoo_env.num_agents == 1
-
-        single_agent_name = zoo_env.agents[0]
+        # assert zoo_env.num_agents == 1  # comment-out: during test the environment can have multiple agents. This wrapper here will be a dummy argument to model constructor.
 
         self.env = zoo_env
-        self.agent_name = single_agent_name
+        self.agent_name = agent_id
 
         self.observation_space = self.env.observation_spaces[self.agent_name]
         self.action_space = self.env.action_spaces[self.agent_name]
