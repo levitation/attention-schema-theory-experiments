@@ -144,8 +144,8 @@ def run_experiment(
         checkpoint = None
 
         if (
-            prev_agent_checkpoint
-            is not None
+            cfg.hparams.model_params.use_weight_sharing  # The reasoning for this condition is that even if the agents have similar roles, they still see each other on different observation layers. For example, the agent 0 is always on layer 0 and agent 1 is alwyas on layer 1, regardless of which agent is observing. Thus if they were trained on separate models then they need separate models also during test. When PPO weight sharing is enabled, then this is not an issue, because the shared model will learn to differentiate between the agents by looking at the agent currently visible in the center of the observation field. TODO: Swap the self-agent and other-agent layers in the environment side in such a manner that self-agent is always at same layer index for all agents and other-agent is also always at same layer index for all agents. Then we can enable this conditional branch for other models as well in scenarios where the agents have symmetric roles.
+            and prev_agent_checkpoint is not None
             # and not use_separate_models_for_each_experiment   # if each experiment has separate models then the model of first agent will have same age as the model of second agent. In this case there is no reason to restrict the model of second agent to be equal of the first agent
         ):  # later experiments may have more agents    # TODO: configuration option for determining whether new agents can copy the checkpoints of earlier agents, and if so then specifically which agent's checkpoint to use
             checkpoint = prev_agent_checkpoint
