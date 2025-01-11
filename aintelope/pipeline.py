@@ -39,6 +39,7 @@ from aintelope.config.config_utils import (
     archive_code,
     get_pipeline_score_dimensions,
     get_score_dimensions,
+    set_console_title,
 )
 from aintelope.experiments import run_experiment
 
@@ -70,6 +71,11 @@ def run_pipeline(cfg: DictConfig) -> None:
         pipeline_config_file = "config_pipeline.yaml"
     pipeline_config = OmegaConf.load(
         os.path.join("aintelope", "config", pipeline_config_file)
+    )
+
+    config_name = HydraConfig.get().job.config_name
+    set_console_title(
+        config_name + " : " + pipeline_config_file + " : " + timestamp_pid_uuid
     )
 
     test_summaries_to_return = []
