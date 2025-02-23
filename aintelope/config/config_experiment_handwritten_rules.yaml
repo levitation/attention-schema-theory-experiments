@@ -40,11 +40,9 @@ hparams:
   agent_params:
     target_handwritten_rules: [food,drink,gold,silver,danger,predator,collision,antimovement]    
   model_params:
+    use_weight_sharing: False
     eps_start: 0.0
     eps_end: 0.0
-    handwritten_rule_bias_epsilon_start: 1.0
-    handwritten_rule_bias_epsilon_end: 1.0
-    apply_handwritten_rule_eps_before_random_eps: True
     eps_last_pipeline_cycle: -1
     eps_last_episode: -1       # use -1 when episode counting for eps is disabled
     eps_last_trial: -1  # 10       # use -1 when trials counting for eps is disabled

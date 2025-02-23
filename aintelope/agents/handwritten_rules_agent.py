@@ -97,7 +97,10 @@ class HandwrittenRulesAgent(Agent):
         # calculate action reward predictions using handwritten_rules
         predicted_action_rewards = defaultdict(float)
 
-        for handwritten_rule_name, handwritten_rule_object in self.handwritten_rules.items():
+        for (
+            handwritten_rule_name,
+            handwritten_rule_object,
+        ) in self.handwritten_rules.items():
             handwritten_rule_action_rewards = {}
             # predict reward for all available actions
             for action in range(
@@ -128,7 +131,9 @@ class HandwrittenRulesAgent(Agent):
             #        q_values[action - min_action] = bias
             #    print(f"gold q_values: {format_float(q_values)}")
 
-        handwritten_rule_q_values = predicted_action_rewards  # handwritten_rules see only one step ahead
+        handwritten_rule_q_values = (
+            predicted_action_rewards  # handwritten_rules see only one step ahead
+        )
 
         q_values = np.zeros([max_action - min_action + 1], np.float32)
         for action, bias in handwritten_rule_q_values.items():
@@ -186,7 +191,10 @@ class HandwrittenRulesAgent(Agent):
             reward = 0
             handwritten_rule_events = []
             if next_state is not None:  # temporary, until we solve final states
-                for handwritten_rule_name, handwritten_rule_object in self.handwritten_rules.items():
+                for (
+                    handwritten_rule_name,
+                    handwritten_rule_object,
+                ) in self.handwritten_rules.items():
                     (
                         handwritten_rule_reward,
                         handwritten_rule_event,
@@ -197,7 +205,9 @@ class HandwrittenRulesAgent(Agent):
                         f"total reward: {reward}"
                     )
                     if handwritten_rule_event != 0:
-                        handwritten_rule_events.append((handwritten_rule_name, handwritten_rule_event))
+                        handwritten_rule_events.append(
+                            (handwritten_rule_name, handwritten_rule_event)
+                        )
 
             # print(f"reward: {reward}")
 
@@ -224,7 +234,9 @@ class HandwrittenRulesAgent(Agent):
                 continue
 
         self.handwritten_rules = {
-            handwritten_rule: available_handwritten_rules_dict_local.get(handwritten_rule)()
+            handwritten_rule: available_handwritten_rules_dict_local.get(
+                handwritten_rule
+            )()
             for handwritten_rule in self.target_handwritten_rules
             if handwritten_rule in available_handwritten_rules_dict_local
         }
