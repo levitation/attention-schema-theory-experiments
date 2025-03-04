@@ -54,7 +54,6 @@ class ZooParallelEnvTemplate(ParallelEnv):
             # do your action handling here
         # / for agent, action in actions.items():
 
-        # rewards for all agents are placed in the rewards dictionary to be returned
         rewards = {}
         for agent in self.agents:
             rewards[agent] = 77
@@ -65,7 +64,6 @@ class ZooParallelEnvTemplate(ParallelEnv):
         env_truncation = self.num_moves >= self.max_iterations
         truncations = {agent: env_truncation for agent in self.agents}
 
-        # current observation is just the other player's most recent action
         observations = {agent: np.zeros([7, 5, 5]) for agent in self.agents}
         self.state = observations
 
