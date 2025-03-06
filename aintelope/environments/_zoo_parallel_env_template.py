@@ -12,9 +12,12 @@ from pettingzoo import AECEnv, ParallelEnv
 
 
 class ZooParallelEnvTemplate(ParallelEnv):
-    def __init__(self, max_iterations=None, *args, **kwargs):
-        self.possible_agents = ["agent_" + str(i) for i in range(2)]
-        self.max_iterations = max_iterations
+    def __init__(
+        self, env_params: Optional[Dict] = None, ignore_num_iters=False, *args, **kwargs
+    ):
+        self.max_num_agents = env_params["amount_agents"]
+        self.possible_agents = ["agent_" + str(i) for i in range(self.max_num_agents)]
+        self.max_iterations = env_params["num_iters"]
         self.render_mode = None  # a required attribute
 
     def observation_space(self, agent):
