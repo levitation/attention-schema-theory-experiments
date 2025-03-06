@@ -5,17 +5,13 @@
 # Repository: https://github.com/aintelope/biological-compatibility-benchmarks
 
 import os
-import sys
-from typing import Dict, Tuple
+from typing import Dict
 
-import numpy as np
 import pytest
 
 from omegaconf import OmegaConf
 
-from aintelope.config.config_utils import register_resolvers
 from aintelope.training.simple_eval import run_episode
-from tests.conftest import tparams_hparams
 
 
 @pytest.mark.parametrize("execution_number", range(1))
@@ -23,8 +19,8 @@ def test_qagent_in_savanna_gridworlds_sequential(
     tparams_hparams: Dict, execution_number
 ) -> None:
     full_params = tparams_hparams
-    params_savanna_zoo = {
-        "agent_id": "q_agent",
+    hparams = {
+        "agent_class": "q_agent",
         "env": "savanna-safetygrid-sequential-v1",
         "env_entry_point": (
             "aintelope.environments.savanna_safetygrid:SavannaGridworldSequentialEnv"
@@ -42,7 +38,7 @@ def test_qagent_in_savanna_gridworlds_sequential(
         },
         "agent_params": {},
     }
-    full_params.hparams = OmegaConf.merge(full_params.hparams, params_savanna_zoo)
+    full_params.hparams = OmegaConf.merge(full_params.hparams, hparams)
     run_episode(full_params=full_params)
 
 
@@ -51,8 +47,8 @@ def test_qagent_in_savanna_gridworlds_sequential_with_death(
     tparams_hparams: Dict, execution_number
 ) -> None:
     full_params = tparams_hparams
-    params_savanna_zoo = {
-        "agent_id": "q_agent",
+    hparams = {
+        "agent_class": "q_agent",
         "env": "savanna-safetygrid-sequential-v1",
         "env_entry_point": (
             "aintelope.environments.savanna_safetygrid:SavannaGridworldSequentialEnv"
@@ -71,7 +67,7 @@ def test_qagent_in_savanna_gridworlds_sequential_with_death(
         },
         "agent_params": {},
     }
-    full_params.hparams = OmegaConf.merge(full_params.hparams, params_savanna_zoo)
+    full_params.hparams = OmegaConf.merge(full_params.hparams, hparams)
     run_episode(full_params=full_params)
 
 
@@ -80,8 +76,8 @@ def test_qagent_in_savanna_gridworlds_parallel(
     tparams_hparams: Dict, execution_number
 ) -> None:
     full_params = tparams_hparams
-    params_savanna_zoo = {
-        "agent_id": "q_agent",
+    hparams = {
+        "agent_class": "q_agent",
         "env": "savanna-safetygrid-parallel-v1",
         "env_entry_point": (
             "aintelope.environments.savanna_safetygrid:SavannaGridworldParallelEnv"
@@ -99,7 +95,7 @@ def test_qagent_in_savanna_gridworlds_parallel(
         },
         "agent_params": {},
     }
-    full_params.hparams = OmegaConf.merge(full_params.hparams, params_savanna_zoo)
+    full_params.hparams = OmegaConf.merge(full_params.hparams, hparams)
     run_episode(full_params=full_params)
 
 
@@ -108,8 +104,8 @@ def test_qagent_in_savanna_gridworlds_parallel_with_death(
     tparams_hparams: Dict, execution_number
 ) -> None:
     full_params = tparams_hparams
-    params_savanna_zoo = {
-        "agent_id": "q_agent",
+    hparams = {
+        "agent_class": "q_agent",
         "env": "savanna-safetygrid-parallel-v1",
         "env_entry_point": (
             "aintelope.environments.savanna_safetygrid:SavannaGridworldParallelEnv"
@@ -128,7 +124,7 @@ def test_qagent_in_savanna_gridworlds_parallel_with_death(
         },
         "agent_params": {},
     }
-    full_params.hparams = OmegaConf.merge(full_params.hparams, params_savanna_zoo)
+    full_params.hparams = OmegaConf.merge(full_params.hparams, hparams)
     run_episode(full_params=full_params)
 
 
