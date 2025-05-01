@@ -79,7 +79,7 @@ class InstinctAgent(QAgent):
         ] = None,
         info: dict = {},
         step: int = 0,
-        trial: int = 0,
+        env_layout_seed: int = 0,
         episode: int = 0,
         pipeline_cycle: int = 0,
     ) -> Optional[int]:
@@ -93,14 +93,18 @@ class InstinctAgent(QAgent):
         if self.done:
             return None
 
-        # TODO: warn if last_frame=0/1 or last_trial=0/1 or last_episode=0/1 in any of the below values: for disabling the epsilon counting for corresponding variable one should use -1
+        # TODO: warn if last_frame=0/1 or last_env_layout_seed=0/1 or last_episode=0/1 in any of the below values: for disabling the epsilon counting for corresponding variable one should use -1
         epsilon = (
             self.hparams.model_params.eps_start - self.hparams.model_params.eps_end
         )
         if self.hparams.model_params.eps_last_frame > 1:
             epsilon *= max(0, 1 - step / self.hparams.model_params.eps_last_frame)
-        if self.hparams.model_params.eps_last_trial > 1:
-            epsilon *= max(0, 1 - trial / self.hparams.model_params.eps_last_trial)
+        if self.hparams.model_params.eps_last_env_layout_seed > 1:
+            epsilon *= max(
+                0,
+                1
+                - env_layout_seed / self.hparams.model_params.eps_last_env_layout_seed,
+            )
         if self.hparams.model_params.eps_last_episode > 1:
             epsilon *= max(0, 1 - episode / self.hparams.model_params.eps_last_episode)
         if self.hparams.model_params.eps_last_pipeline_cycle > 1:
@@ -118,9 +122,11 @@ class InstinctAgent(QAgent):
             instinct_epsilon *= max(
                 0, 1 - step / self.hparams.model_params.eps_last_frame
             )
-        if self.hparams.model_params.eps_last_trial > 1:
+        if self.hparams.model_params.eps_last_env_layout_seed > 1:
             instinct_epsilon *= max(
-                0, 1 - trial / self.hparams.model_params.eps_last_trial
+                0,
+                1
+                - env_layout_seed / self.hparams.model_params.eps_last_env_layout_seed,
             )
         if self.hparams.model_params.eps_last_episode > 1:
             instinct_epsilon *= max(
@@ -184,7 +190,7 @@ class InstinctAgent(QAgent):
         else:
             instinct_q_values = None
 
-        # action = super().get_action(observation=observation, info=info, step=step, trial=trial, episode=episode, pipeline_cycle=pipeline_cycle, q_values=instinct_q_values)
+        # action = super().get_action(observation=observation, info=info, step=step, env_layout_seed=env_layout_seed, episode=episode, pipeline_cycle=pipeline_cycle, q_values=instinct_q_values)
 
         apply_instinct_eps_before_random_eps = (
             self.hparams.model_params.apply_instinct_eps_before_random_eps
@@ -218,7 +224,13 @@ class InstinctAgent(QAgent):
 
         else:
             q_values = self.trainer.get_action(
-                self.id, observation, self.info, step, trial, episode, pipeline_cycle
+                self.id,
+                observation,
+                self.info,
+                step,
+                env_layout_seed,
+                episode,
+                pipeline_cycle,
             )
 
             action = (

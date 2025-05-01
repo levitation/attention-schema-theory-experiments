@@ -62,7 +62,7 @@ DEFAULT_SUSTAINABILITY_CHALLENGE = False  # Whether to deplete the drink and foo
 DEFAULT_THIRST_HUNGER_DEATH = False       # Whether the agent dies if it does not consume both the drink and food resources at regular intervals.
 DEFAULT_PENALISE_OVERSATIATION = False    # Whether to penalise non stop consumption of the drink and food resources.
 DEFAULT_USE_SATIATION_PROPORTIONAL_SCORE = False   # TODO: description
-DEFAULT_MAP_RANDOMIZATION_FREQUENCY = 3                 # Whether to randomize the map.   # 0 - off, 1 - once per experiment run, 2 - once per trial (a trial is a sequence of training episodes separated by env.reset call, but using a same model instance), 3 - once per training episode
+DEFAULT_MAP_RANDOMIZATION_FREQUENCY = 3                 # Whether to randomize the map.   # 0 - off, 1 - once per experiment run, 2 - once per env seed update (there is a sequence of training episodes separated by env.reset call, but using a same model instance), 3 - once per training episode
 DEFAULT_OBSERVATION_RADIUS = [10] * 4            # How many tiles away from the agent can the agent see? -1 means the agent perspective is same as global perspective and the observation does not move when the agent moves. 0 means the agent can see only the tile underneath itself. None means the agent can see the whole board while still having agent-centric perspective; the observation size is 2*board_size-1.
 DEFAULT_OBSERVATION_DIRECTION_MODE = 1    # 0 - fixed, 1 - relative, depending on last move, 2 - relative, controlled by separate turning actions
 DEFAULT_ACTION_DIRECTION_MODE = 1         # 0 - fixed, 1 - relative, depending on last move, 2 - relative, controlled by separate turning actions
@@ -457,7 +457,7 @@ def define_flags():
                         '')
 
   flags.DEFINE_integer('map_randomization_frequency', DEFAULT_MAP_RANDOMIZATION_FREQUENCY,
-                        'Whether and when to randomize the map. 0 - off, 1 - once per experiment run, 2 - once per trial (a trial is a sequence of training episodes separated by env.reset call, but using a same model instance), 3 - once per training episode.')
+                        'Whether and when to randomize the map. 0 - off, 1 - once per experiment run, 2 - once per env layout seed update (there is a sequence of training episodes separated by env.reset call, but using a same model instance), 3 - once per training episode.')
   
   flags.DEFINE_string('observation_radius', str(DEFAULT_OBSERVATION_RADIUS), 
                        'How many tiles away from the agent can the agent see? -1 means the agent perspective is same as global perspective and the observation does not move when the agent moves. 0 means the agent can see only the tile underneath itself. None means the agent can see the whole board while still having agent-centric perspective; the observation size is 2*board_size-1.')
@@ -1763,14 +1763,14 @@ def main(unused_argv):    # human playable demo functionality
   enable_turning_keys = FLAGS.observation_direction_mode == 2 or FLAGS.action_direction_mode == 2
 
   while True:
-    for trial_no in range(0, 2):
-      # env.reset(options={"trial_no": trial_no + 1})  # NB! provide only trial_no. episode_no is updated automatically
+    for env_layout_seed in range(0, 2):
+      # env.reset(options={"env_layout_seed": env_layout_seed + 1})  # NB! provide only env_layout_seed. episode_no is updated automatically
       for episode_no in range(0, 2): 
         env.reset()   # it would also be ok to reset() at the end of the loop, it will not mess up the episode counter
         ui = safety_ui_ex.make_human_curses_ui_with_noop_keys(GAME_BG_COLOURS, GAME_FG_COLOURS, noop_keys=FLAGS.noops, turning_keys=enable_turning_keys)
         ui.play(env)
-      # TODO: randomize the map once per trial, not once per episode
-      env.reset(options={"trial_no": env.get_trial_no()  + 1})  # NB! provide only trial_no. episode_no is updated automatically
+      # TODO: randomize the map once per env_layout_seed, not once per episode
+      env.reset(options={"env_layout_seed": env.get_env_layout_seed()  + 1})  # NB! provide only env_layout_seed. episode_no is updated automatically
 
 
 
