@@ -45,7 +45,7 @@ logger = logging.getLogger("aintelope.agents.ddpg_agent")
 
 
 # need separate function outside of class in order to init multi-model training threads
-def ddpg_model_constructor(env, cfg):
+def ddpg_model_constructor(env, env_classname, agent_id, cfg):
     n_actions = (
         env.action_space.n
     )  # Use self.env to get access to original Zoo env API. In contrast, the env variable contains a Gym env with a different API.

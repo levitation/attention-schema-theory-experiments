@@ -138,6 +138,7 @@ def sb3_agent_train_thread_entry_point(
     gpu_index,
     num_total_steps,
     model_constructor,
+    env_classname,
     agent_id,
     checkpoint_filename,
     cfg,
@@ -181,7 +182,7 @@ def sb3_agent_train_thread_entry_point(
             else None
         )
 
-        model = model_constructor(env_wrapper, cfg)
+        model = model_constructor(env_wrapper, env_classname, agent_id, cfg)
         model.learn(total_timesteps=num_total_steps, callback=checkpoint_callback)
         env_wrapper.save_or_return_model(model, filename_timestamp_sufix_str)
     except (
@@ -215,6 +216,11 @@ class SB3BaseAgent(Agent):
         self.id = agent_id
         self.cfg = cfg
         self.env = env
+        self.env_classname = (
+            env.__class__.__bases__[0].__module__
+            + "."
+            + env.__class__.__bases__[0].__qualname__
+        )
         self.test_mode = test_mode
         self.i_pipeline_cycle = i_pipeline_cycle
         self.next_episode_no = 0
@@ -555,7 +561,9 @@ class SB3BaseAgent(Agent):
                 self.cfg
             )  # need to resolve the conf before passing to subprocesses since OmegaConf resolvers do not seem to work well in subprocesses
 
-            env_wrapper = MultiAgentZooToGymAdapterZooSide(self.env, self.cfg)
+            env_wrapper = MultiAgentZooToGymAdapterZooSide(
+                self.env, self.env_classname, self.cfg
+            )
             self.models, self.exceptions = env_wrapper.train(
                 num_total_steps=num_total_steps,
                 agent_thread_entry_point=sb3_agent_train_thread_entry_point,

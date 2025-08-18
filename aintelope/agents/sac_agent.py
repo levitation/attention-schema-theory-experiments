@@ -44,7 +44,7 @@ logger = logging.getLogger("aintelope.agents.sac_agent")
 
 
 # need separate function outside of class in order to init multi-model training threads
-def sac_model_constructor(env, cfg):
+def sac_model_constructor(env, env_classname, agent_id, cfg):
     # policy_kwarg:
     # if you want to use CnnPolicy or MultiInputPolicy with image-like observation (3D tensor) that are already normalized, you must pass normalize_images=False
     # see the following links:
