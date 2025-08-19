@@ -155,7 +155,11 @@ def dqn_model_constructor(env, env_classname, agent_id, cfg):
     # https://github.com/DLR-RM/stable-baselines3/issues/1863
     # Also: make sure your image is in the channel-first format.
 
-    if True or use_imitation_learning:
+    use_imitation_learning = (
+        cfg.hparams.model_params.instinct_bias_epsilon_start > 0
+        or cfg.hparams.model_params.instinct_bias_epsilon_end > 0
+    )
+    if use_imitation_learning:
         policy = (
             PolicyWithConfig(env_classname, agent_id, cfg, CnnPolicyWithExpertOverride)
             if cfg.hparams.model_params.num_conv_layers > 0

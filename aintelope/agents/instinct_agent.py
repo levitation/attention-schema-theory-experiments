@@ -96,7 +96,11 @@ class InstinctAgent(QAgent):
         if self.done:
             return None
 
-        if test_mode:
+        if self.hparams.num_episodes == 0:  # there is no training
+            # detected pure instinct agent test without training - if that config is detected then test mode will use the instincts
+            epsilon = 0
+            instinct_epsilon = 1
+        elif test_mode:
             epsilon = 0
             instinct_epsilon = 0
         else:
@@ -110,14 +114,19 @@ class InstinctAgent(QAgent):
                 epsilon *= max(
                     0,
                     1
-                    - env_layout_seed / self.hparams.model_params.eps_last_env_layout_seed,
+                    - env_layout_seed
+                    / self.hparams.model_params.eps_last_env_layout_seed,
                 )
             if self.hparams.model_params.eps_last_episode > 1:
-                epsilon *= max(0, 1 - episode / self.hparams.model_params.eps_last_episode)
+                epsilon *= max(
+                    0, 1 - episode / self.hparams.model_params.eps_last_episode
+                )
             if self.hparams.model_params.eps_last_pipeline_cycle > 1:
                 epsilon *= max(
                     0,
-                    1 - pipeline_cycle / self.hparams.model_params.eps_last_pipeline_cycle,
+                    1
+                    - pipeline_cycle
+                    / self.hparams.model_params.eps_last_pipeline_cycle,
                 )
             epsilon += self.hparams.model_params.eps_end
 
@@ -133,7 +142,8 @@ class InstinctAgent(QAgent):
                 instinct_epsilon *= max(
                     0,
                     1
-                    - env_layout_seed / self.hparams.model_params.eps_last_env_layout_seed,
+                    - env_layout_seed
+                    / self.hparams.model_params.eps_last_env_layout_seed,
                 )
             if self.hparams.model_params.eps_last_episode > 1:
                 instinct_epsilon *= max(
@@ -142,14 +152,16 @@ class InstinctAgent(QAgent):
             if self.hparams.model_params.eps_last_pipeline_cycle > 1:
                 instinct_epsilon *= max(
                     0,
-                    1 - pipeline_cycle / self.hparams.model_params.eps_last_pipeline_cycle,
+                    1
+                    - pipeline_cycle
+                    / self.hparams.model_params.eps_last_pipeline_cycle,
                 )
             instinct_epsilon += self.hparams.model_params.instinct_bias_epsilon_end
 
             # print(f"Epsilon: {epsilon}")
             # print(f"Instinct bias epsilon: {instinct_epsilon}")
 
-        #/ if info["test_mode"]:
+        # / if test_mode:
 
         action_space = self.trainer.action_spaces[self.id]
         if isinstance(action_space, Discrete):
