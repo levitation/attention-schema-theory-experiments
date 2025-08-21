@@ -88,7 +88,11 @@ def run_experiment(
     else:
         lzma_events_log = False
     events = recording.EventLog(
-        experiment_dir, events_fname, events_columns, lzma_log=lzma_events_log
+        experiment_dir,
+        events_fname,
+        events_columns,
+        # NB! compress the log only after test has run, else if were already compressed after train, opening the CSV log during test would create a new file (instead of appending) and then at the end of the test, compressing that new CSV file would just overwrite the already existing compressed (training) log
+        lzma_log=lzma_events_log and test_mode,
     )
 
     # Common trainer for each agent's models
@@ -546,11 +550,6 @@ def run_baseline_training(
     # https://pettingzoo.farama.org/tutorials/sb3/waterworld/
 
     # TODO: we could still allow multiple agents WITH SEPARATE MODELS training if we use an appropriate env wrapper
-
-    # TODO: implement instincts using action masking?
-    # see https://github.com/Stable-Baselines-Team/stable-baselines3-contrib/blob/master/docs/modules/ppo_mask.rst
-    # Masking helps the PPO to know which action was actually taken.
-    # Alternatively, use some intrusive method to let PPO know which action the instinct actually took.
 
     unit_test_mode = cfg.hparams.unit_test_mode
 
