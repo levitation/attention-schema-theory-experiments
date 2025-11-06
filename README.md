@@ -6,9 +6,9 @@ This work introduces safety challenges for an agent's ability to learn and act i
 
 The benchmarks were implemented in a gridworld-based environment. The environments are relatively simple, just as much complexity is added as is necessary to illustrate the relevant safety and performance aspects. The pictures attached in this document are illustrative, since the environment sizes and amounts of object types can be changed.
 
-The source code for concrete implementation of biologically compatible benchmarks described in this publication, as well as code for training and running the agents can be found at the current repo [https://github.com/aintelope/biological-compatibility-benchmarks](https://github.com/aintelope/biological-compatibility-benchmarks). The repo contains code for agents based on OpenAI Stable Baselines 3, code for an LLM agent, and an example code for a random agent, which can be extended for example into a custom implementation of a Q-learning agent.
+The source code for concrete implementation of biologically compatible benchmarks described in this publication, as well as code for training and running the agents can be found at the current repo [https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks](https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks). The repo contains code for agents based on OpenAI Stable Baselines 3, code for an LLM agent, and an example code for a random agent, which can be extended for example into a custom implementation of a Q-learning agent.
 
-The source code for the **Extended Gridworlds** framework can be found at [https://github.com/levitation-opensource/ai-safety-gridworlds/tree/biological-compatibility-benchmarks](https://github.com/levitation-opensource/ai-safety-gridworlds/tree/biological-compatibility-benchmarks). Current repo imports this extended gridworlds framework as a dependency and it is used for providing building blocks the concrete environment implementation in the current project.
+The source code for the **Extended Gridworlds** framework can be found at [https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds/tree/biological-compatibility-benchmarks](https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds/tree/biological-compatibility-benchmarks). Current repo imports this extended gridworlds framework as a dependency and it is used for providing building blocks the concrete environment implementation in the current project.
 
 
 ## Authorship and How to Cite
@@ -49,7 +49,7 @@ Under Linux, run the following commands:
 2. Get the code from repo:
 
 `sudo apt install git-all`
-<br>Run `git clone https://github.com/aintelope/biological-compatibility-benchmarks.git`
+<br>Run `git clone https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks.git`
 <br>Run `cd biological-compatibility-benchmarks`
 
 3. Create a virtual python environment:
@@ -92,7 +92,7 @@ You can download the latest installer from https://www.python.org/downloads/rele
 2. Get the code from repo:
 * Install Git from https://gitforwindows.org/
 * Open command prompt and navigate top the folder you want to use for repo
-* Run `git clone https://github.com/aintelope/biological-compatibility-benchmarks.git`
+* Run `git clone https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks.git`
 * Run `cd biological-compatibility-benchmarks`
 
 3. Create a virtual python environment by running: 
@@ -245,8 +245,8 @@ Aintelope code base is compatible with Windows. No extra steps needed. GPU compu
 
 # Dependencies
 
-* **Extended, multi-agent and multi-objective version of AI Safety Gridworlds** - Extended, multi-agent and multi-objective (MaMoRL / MoMaRL) environments based on DeepMind's AI Safety Gridworlds. This is a suite of reinforcement learning environments illustrating various safety properties of intelligent agents. It is made compatible with OpenAI's Gym/Gymnasium and Farama Foundation PettingZoo. https://github.com/levitation-opensource/ai-safety-gridworlds
-* **Zoo to Gym Multi-Agent Adapter** - Enables you to convert a PettingZoo environment to a Gym environment while supporting multiple agents (MARL). Gym's default setup doesn't easily support multi-agent environments, but this wrapper resolves that by running each agent in its own process and sharing the environment across those processes. https://github.com/levitation-opensource/zoo_to_gym_multiagent_adapter
+* **Extended, multi-agent and multi-objective version of AI Safety Gridworlds** - Extended, multi-agent and multi-objective (MaMoRL / MoMaRL) environments based on DeepMind's AI Safety Gridworlds. This is a suite of reinforcement learning environments illustrating various safety properties of intelligent agents. It is made compatible with OpenAI's Gym/Gymnasium and Farama Foundation PettingZoo. https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds
+* **Zoo to Gym Multi-Agent Adapter** - Enables you to convert a PettingZoo environment to a Gym environment while supporting multiple agents (MARL). Gym's default setup doesn't easily support multi-agent environments, but this wrapper resolves that by running each agent in its own process and sharing the environment across those processes. https://github.com/biological-alignment-benchmarks/zoo_to_gym_multiagent_adapter
 
 
 # Related work
