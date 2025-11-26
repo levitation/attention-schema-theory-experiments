@@ -24,6 +24,7 @@ Git authorship distribution top:
 | Joel Pyykkö                         |   371 |    159 |     12 | 1.7/12.9/ 5.6   |
 | derdre                              |   369 |     62 |     23 | 1.7/ 5.0/10.6   |
 | a.kochanke                          |   239 |    145 |     20 | 1.1/11.8/ 9.3   |
+| Gunnar Zarncke                      |   127 |      1 |      1 | 0.6/ 0.1/ 0.5   |
 
 For more details, see the [LICENSE.txt](LICENSE.txt) and [AUTHORS.md](AUTHORS.md) files.
 
@@ -251,8 +252,8 @@ Aintelope code base is compatible with Windows. No extra steps needed. GPU compu
 
 # Related work
 
-* **Notable runaway-optimiser-like LLM failure modes on Biologically and Economically aligned AI safety benchmarks for LLMs with simplified observation format** https://www.lesswrong.com/posts/PejNckwQj3A2MGhMA/notable-runaway-optimiser-like-llm-failure-modes-on
-* **BioBlue: Biologically and economically aligned AI safety benchmarks for LLM-s with simplified observation format** (Roland Pihlakas, Shruti Datta Gupta, Sruthi Kuriakose 2025) [repo](https://github.com/levitation-opensource/bioblue) and [PDF report](https://github.com/levitation-opensource/bioblue/blob/main/BioBlue%20-%20Biologically%20and%20economically%20aligned%20AI%20safety%20benchmarks%20for%20LLMs.pdf)
+* **BioBlue: Notable runaway-optimiser-like LLM failure modes on biologically and economically aligned AI safety benchmarks for LLMs with simplified observation format** https://arxiv.org/abs/2509.02655 and https://www.lesswrong.com/posts/PejNckwQj3A2MGhMA/notable-runaway-optimiser-like-llm-failure-modes-on
+* **BioBlue: Biologically and economically aligned AI safety benchmarks for LLM-s with simplified observation format** (Roland Pihlakas, Shruti Datta Gupta, Sruthi Kuriakose 2025) [repo](https://github.com/biological-alignment-benchmarks/bioblue) and [PDF report](https://github.com/biological-alignment-benchmarks/bioblue/blob/main/BioBlue%20-%20Biologically%20and%20economically%20aligned%20AI%20safety%20benchmarks%20for%20LLMs.pdf)
 
 
 # License
