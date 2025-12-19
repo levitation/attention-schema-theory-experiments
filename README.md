@@ -1,33 +1,6 @@
-# Biologically and economically aligned multi-objective multi-agent AI safety benchmarks
+# AST experiments (title pending)
 
-Developing safe agentic AI systems benefits from automated empirical testing that conforms with human values, a subfield that is largely underdeveloped at the moment. To contribute towards this topic, present work focuses on introducing biologically and economically motivated themes that have been neglected in the safety aspects of modern reinforcement learning literature, namely homeostasis, balancing multiple objectives, bounded objectives, diminishing returns, sustainability, and multi-agent resource sharing. We implemented eight main benchmark environments on the above themes, for illustrating the potential shortcomings of current mainstream discussions on AI safety.
-
-This work introduces safety challenges for an agent's ability to learn and act in desired ways in relation to biologically and economically relevant aspects. In total we implemented nine benchmarks, which are conceptually split into three developmental stages: “basic biologically inspired dynamics in objectives”, “multi-objective agents”, and “cooperation”. The first two stages can be considered as proto-cooperative stages, since the behavioral dynamics tested in these benchmarks will be later potentially very relevant for supporting and enabling cooperative behavior in multi-agent scenarios. 
-
-The benchmarks were implemented in a gridworld-based environment. The environments are relatively simple, just as much complexity is added as is necessary to illustrate the relevant safety and performance aspects. The pictures attached in this document are illustrative, since the environment sizes and amounts of object types can be changed.
-
-The source code for concrete implementation of biologically compatible benchmarks described in this publication, as well as code for training and running the agents can be found at the current repo [https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks](https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks). The repo contains code for agents based on OpenAI Stable Baselines 3, code for an LLM agent, and an example code for a random agent, which can be extended for example into a custom implementation of a Q-learning agent.
-
-The source code for the **Extended Gridworlds** framework can be found at [https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds/tree/biological-compatibility-benchmarks](https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds/tree/biological-compatibility-benchmarks). Current repo imports this extended gridworlds framework as a dependency and it is used for providing building blocks the concrete environment implementation in the current project.
-
-
-## Authorship and How to Cite
-
-Roland Pihlakas. From homeostasis to resource sharing: Biologically and economically aligned multi-objective multi-agent gridworld-based AI safety benchmarks. Arxiv, a working paper, September 2024 (https://arxiv.org/abs/2410.00081).
-
-**Use of Entire Suite**: We encourage the inclusion of the entire benchmark suite in derivative works to maintain the integrity and comprehensiveness of AI safety assessments.
-
-Git authorship distribution top:
-| Author                              |   loc |   coms |   fils |  distribution   |
-|:------------------------------------|------:|-------:|-------:|:----------------|
-| Roland Pihlakas                     | 21014 |    693 |    139 | 94.6/56.2/64.4  |
-| Joel Pyykkö                         |   371 |    159 |     12 | 1.7/12.9/ 5.6   |
-| derdre                              |   369 |     62 |     23 | 1.7/ 5.0/10.6   |
-| a.kochanke                          |   239 |    145 |     20 | 1.1/11.8/ 9.3   |
-| Gunnar Zarncke                      |   127 |      1 |      1 | 0.6/ 0.1/ 0.5   |
-
-For more details, see the [LICENSE.txt](LICENSE.txt) and [AUTHORS.md](AUTHORS.md) files.
-
+Description pending.
 
 ## Project setup
 
@@ -220,52 +193,13 @@ food_sharing.py
 Aintelope code base is compatible with Windows. No extra steps needed. GPU computation works fine as well. WSL is not needed.
 
 
-# Papers
+# -----
 
-* A working paper related to this repo: Roland Pihlakas. "From homeostasis to resource sharing: Biologically and economically aligned multi-objective multi-agent gridworld-based AI safety benchmarks". September 2024. https://arxiv.org/abs/2410.00081 
-<br>Data files of the experiments performed for the current version of working paper are available here: https://drive.google.com/drive/folders/1KBRcPLbM2a8Li3HQ92lGTEfizOGtZ7OM?usp=sharing These data files contain logs of the steps agents took across training and test episodes, and multi-objective environment scores calculated during each step. Each RL training run is 100k steps. There is one trial per benchmark-networkconfiguration-model combination.
-* **New data files for an updated version of the paper are currently being generated here:** https://aintelope.simplify.ee/ These new experiments have longer RL training runs (1M steps) and more trials per benchmark-networkconfiguration-model combination (100 trials each).
+**Attribution & License**
 
+This repository is a fork and derivative of "From homeostasis to resource sharing: Biologically and economically aligned multi-objective multi-agent gridworld-based AI safety benchmarks" (Roland Pihlakas et al.). Please cite the original work (DOI: `10.48550/arXiv.2410.00081`) — see `CITATION.cff` for citation metadata.  
+Original upstream repository: https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks
 
-# Blog posts
+License: see `LICENSE.txt`.  
+Authors and contribution details: see `AUTHORS.md`.
 
-* **Why modelling multi-objective homeostasis is essential for AI alignment (and how it helps with AI safety as well)** (2025) https://www.lesswrong.com/posts/vGeuBKQ7nzPnn5f7A/why-modelling-multi-objective-homeostasis-is-essential-for
-
-
-# Presentations
-
-* At **VAISU unconference**, May 2024:
-    - Demo and feedback session - AI safety benchmarking in multi-objective multi-agent gridworlds - Biologically essential yet neglected themes illustrating the weaknesses and dangers of current industry standard approaches to reinforcement learning. 
-    - Video: https://www.youtube.com/watch?v=ydxMlGlQeco
-    - Slides: https://bit.ly/bmmbs
-* At **Foresight Institute's Intelligent Cooperation Group**, Nov 2024: 
-    - The subject of the presentation was describing why we should consider fundamental yet neglected principles from biology and economics when thinking about AI alignment, and how these considerations will help with AI safety as well (alignment and safety were treated in this research explicitly as separate aspects, which both benefit from consideration of aforementioned principles). These principles include homeostasis and diminishing returns in utility functions, and sustainability. Next I introduce multi-objective and multi-agent gridworlds-based benchmark environments we have created for measuring the performance of machine learning algorithms and AI agents in relation to their capacity for biological and economical alignment. The benchmarks are now available as a public repo. At the end I mention some of the related themes and dilemmas not yet covered by these benchmarks, and describe new benchmark environments we have planned for future implementation.
-    - Recording: https://www.youtube.com/watch?v=DCUqqyyhcko
-    - Slides: https://bit.ly/beamm 
-
-
-# Dependencies
-
-* **Extended, multi-agent and multi-objective version of AI Safety Gridworlds** - Extended, multi-agent and multi-objective (MaMoRL / MoMaRL) environments based on DeepMind's AI Safety Gridworlds. This is a suite of reinforcement learning environments illustrating various safety properties of intelligent agents. It is made compatible with OpenAI's Gym/Gymnasium and Farama Foundation PettingZoo. https://github.com/biological-alignment-benchmarks/ai-safety-gridworlds
-* **Zoo to Gym Multi-Agent Adapter** - Enables you to convert a PettingZoo environment to a Gym environment while supporting multiple agents (MARL). Gym's default setup doesn't easily support multi-agent environments, but this wrapper resolves that by running each agent in its own process and sharing the environment across those processes. https://github.com/biological-alignment-benchmarks/zoo_to_gym_multiagent_adapter
-
-
-# Related work
-
-* **BioBlue: Notable runaway-optimiser-like LLM failure modes on biologically and economically aligned AI safety benchmarks for LLMs with simplified observation format** https://arxiv.org/abs/2509.02655 and https://www.lesswrong.com/posts/PejNckwQj3A2MGhMA/notable-runaway-optimiser-like-llm-failure-modes-on
-* **BioBlue: Biologically and economically aligned AI safety benchmarks for LLM-s with simplified observation format** (Roland Pihlakas, Shruti Datta Gupta, Sruthi Kuriakose 2025) [repo](https://github.com/biological-alignment-benchmarks/bioblue) and [PDF report](https://github.com/biological-alignment-benchmarks/bioblue/blob/main/BioBlue%20-%20Biologically%20and%20economically%20aligned%20AI%20safety%20benchmarks%20for%20LLMs.pdf)
-
-
-# License
-
-This project is licensed under the Mozilla Public License 2.0. You are free to use, modify, and distribute this code under the terms of this license.
-
-**Attribution Requirement**: If you use this benchmark suite, please cite the source as follows:
-
-Roland Pihlakas. From homeostasis to resource sharing: Biologically and economically aligned multi-objective multi-agent gridworld-based AI safety benchmarks. Arxiv, a working paper, September 2024 (https://arxiv.org/abs/2410.00081).
-
-**Use of Entire Suite**: We encourage the inclusion of the entire benchmark suite in derivative works to maintain the integrity and comprehensiveness of AI safety assessments.
-
-For more details, see the [LICENSE.txt](LICENSE.txt) and [AUTHORS.md](AUTHORS.md) files.
-
-This repo derives from Aintelope's internal repo on branch publication.
