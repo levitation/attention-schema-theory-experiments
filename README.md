@@ -23,8 +23,8 @@ Under Linux, run the following commands:
 2. Get the code from repo:
 
 `sudo apt install git-all`
-<br>Run `git clone https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks.git`
-<br>Run `cd biological-compatibility-benchmarks`
+<br>Run `git clone https://github.com/aintelope/attention-schema-theory-experiments.git`
+<br>Run `cd attention-schema-theory-experiments`
 
 3. Create a virtual python environment:
 
@@ -66,8 +66,8 @@ You can download the latest installer from https://www.python.org/downloads/rele
 2. Get the code from repo:
 * Install Git from https://gitforwindows.org/
 * Open command prompt and navigate top the folder you want to use for repo
-* Run `git clone https://github.com/biological-alignment-benchmarks/biological-alignment-gridworlds-benchmarks.git`
-* Run `cd biological-compatibility-benchmarks`
+* Run `git clone https://github.com/aintelope/attention-schema-theory-experiments.git`
+* Run `cd attention-schema-theory-experiments`
 
 3. Create a virtual python environment by running: 
 <br>3.1. To activate VirtualEnv with Python 3.10:
